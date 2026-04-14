@@ -736,20 +736,35 @@ function appendAiMsg() {
 }
 
 function addCopyBtn(actions, bubble) {
+  const copyIcon = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`;
+  const doneIcon = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`;
+
   const btn = document.createElement('button');
   btn.className = 'copy-btn';
-  btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> Copy`;
+  btn.innerHTML = `${copyIcon} Copy`;
+
   btn.onclick = () => {
-    const text = bubble.innerText || bubble.textContent;
-    navigator.clipboard.writeText(text).then(() => {
+    /* Copy as rich HTML so Word preserves headings, tables, bullets */
+    const html = `<html><body><div style="font-family:Calibri,sans-serif;font-size:11pt;line-height:1.6">${bubble.innerHTML}</div></body></html>`;
+    const plain = bubble.innerText || bubble.textContent;
+
+    function flash() {
       btn.classList.add('copied');
-      btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg> Copied`;
-      setTimeout(() => {
-        btn.classList.remove('copied');
-        btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> Copy`;
-      }, 2000);
-    });
+      btn.innerHTML = `${doneIcon} Copied`;
+      setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = `${copyIcon} Copy`; }, 2000);
+    }
+
+    try {
+      const item = new ClipboardItem({
+        'text/html':  new Blob([html],  { type: 'text/html' }),
+        'text/plain': new Blob([plain], { type: 'text/plain' }),
+      });
+      navigator.clipboard.write([item]).then(flash).catch(() => navigator.clipboard.writeText(plain).then(flash));
+    } catch {
+      navigator.clipboard.writeText(plain).then(flash);
+    }
   };
+
   actions.appendChild(btn);
 }
 
