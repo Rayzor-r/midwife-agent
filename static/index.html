@@ -304,6 +304,16 @@ html,body{height:100%;font-family:var(--font);font-size:14px;
 
 .msg-time{font-size:10.5px;color:var(--t3);margin-top:5px;padding:0 4px}
 
+/* Copy button */
+.copy-btn{
+  display:inline-flex;align-items:center;gap:5px;margin-top:7px;
+  padding:4px 10px;border-radius:6px;border:1px solid var(--gb);
+  background:var(--g2);color:var(--t3);font-size:11px;font-family:var(--font);
+  cursor:pointer;transition:all .18s;letter-spacing:.01em}
+.copy-btn:hover{background:var(--g3);color:var(--t2);border-color:var(--gb2)}
+.copy-btn.copied{color:var(--success);border-color:rgba(7,202,107,.35);background:var(--success-dim)}
+.copy-btn svg{width:11px;height:11px;fill:currentColor;flex-shrink:0}
+
 /* Source pills */
 .sources{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
 .src-pill{
@@ -474,24 +484,44 @@ html,body{height:100%;font-family:var(--font);font-size:14px;
         </div>
         <div class="suggestions" id="suggestions">
           <button class="sug" onclick="useSuggestion(this)"
-            data-q="What is the protocol for Group B Streptococcus (GBS) screening in the third trimester?">
-            <div class="sug-cat">Clinical</div>
-            <div class="sug-txt">GBS screening protocol — third trimester</div>
+            data-q="What are the key clinical assessments and screening tests recommended in the first trimester (weeks 1–12) for a low-risk pregnancy in New Zealand, including dating scan, blood tests, and Down syndrome screening?">
+            <div class="sug-cat">First Trimester</div>
+            <div class="sug-txt">Key assessments &amp; screening — weeks 1–12</div>
           </button>
           <button class="sug" onclick="useSuggestion(this)"
-            data-q="Draft a warm, professional welcome email to a new client explaining what to expect at their first antenatal appointment.">
+            data-q="What are the important clinical checks, scans, and client education points for the second trimester (weeks 13–26), including the anatomy scan, glucose tolerance testing, and fetal movement awareness?">
+            <div class="sug-cat">Second Trimester</div>
+            <div class="sug-txt">Clinical checks &amp; scans — weeks 13–26</div>
+          </button>
+          <button class="sug" onclick="useSuggestion(this)"
+            data-q="What is the protocol for Group B Streptococcus (GBS) screening and management in the third trimester (weeks 27–40), and what are the key birth planning considerations for a low-risk client?">
+            <div class="sug-cat">Third Trimester</div>
+            <div class="sug-txt">GBS screening &amp; birth planning — weeks 27–40</div>
+          </button>
+          <button class="sug" onclick="useSuggestion(this)"
+            data-q="What are the key postnatal assessments and visits required in the first six weeks after birth for both mother and baby under NZ LMC care, including NICU referral thresholds and breastfeeding support?">
+            <div class="sug-cat">Postnatal</div>
+            <div class="sug-txt">Postnatal assessments — first six weeks</div>
+          </button>
+          <button class="sug" onclick="useSuggestion(this)"
+            data-q="Draft a warm, professional welcome email to a new client explaining what to expect at their first antenatal appointment, what to bring, and how the LMC relationship works in New Zealand.">
             <div class="sug-cat">Email Draft</div>
-            <div class="sug-txt">Welcome email for new antenatal client</div>
+            <div class="sug-txt">Welcome email — new antenatal client</div>
           </button>
           <button class="sug" onclick="useSuggestion(this)"
-            data-q="What is the recommended schedule of antenatal visits for a low-risk pregnancy in New Zealand?">
-            <div class="sug-cat">Clinical</div>
-            <div class="sug-txt">Antenatal visit schedule — low-risk NZ</div>
-          </button>
-          <button class="sug" onclick="useSuggestion(this)"
-            data-q="Draft a referral email to a GP for a client at 36 weeks with elevated blood pressure and suspected pre-eclampsia.">
+            data-q="Draft a referral email to a GP or obstetrician for a client at 34 weeks with elevated blood pressure readings and suspected pre-eclampsia, including key clinical findings.">
             <div class="sug-cat">Email Draft</div>
-            <div class="sug-txt">GP referral — suspected pre-eclampsia</div>
+            <div class="sug-txt">Referral email — suspected pre-eclampsia</div>
+          </button>
+          <button class="sug" onclick="useSuggestion(this)"
+            data-q="What are the referral thresholds and transfer criteria for antepartum haemorrhage in a community or primary birthing unit setting in the Lakes/Northland region?">
+            <div class="sug-cat">Clinical</div>
+            <div class="sug-txt">APH referral &amp; transfer thresholds</div>
+          </button>
+          <button class="sug" onclick="useSuggestion(this)"
+            data-q="Draft a clear, professional email to a client explaining that she needs to transfer her care to secondary services, using a warm and reassuring tone appropriate for a maternity setting.">
+            <div class="sug-cat">Email Draft</div>
+            <div class="sug-txt">Transfer of care email — secondary services</div>
           </button>
         </div>
       </div>
@@ -559,7 +589,8 @@ async function sendMessage(overrideText) {
 
   let aiText = '';
   let aiSources = [];
-  let bubbleEl = null;
+  let bubbleEl  = null;
+  let actionsEl = null;
   let msgBodyEl = null;
 
   try {
@@ -595,8 +626,9 @@ async function sendMessage(overrideText) {
             if (!bubbleEl) {
               typingEl.remove();
               const els = appendAiMsg();
-              bubbleEl  = els.bubble;
-              msgBodyEl = els.body;
+              bubbleEl   = els.bubble;
+              actionsEl  = els.actions;
+              msgBodyEl  = els.body;
             }
             aiText += data.text;
             bubbleEl.innerHTML = marked.parse(aiText);
@@ -614,6 +646,7 @@ async function sendMessage(overrideText) {
                 .join('');
               msgBodyEl.appendChild(srcEl);
             }
+            if (actionsEl && bubbleEl) addCopyBtn(actionsEl, bubbleEl);
             state.messages.push({ role: 'assistant', content: aiText });
           }
         }
@@ -690,14 +723,34 @@ function appendAiMsg() {
     </div>
     <div class="msg-body">
       <div class="bubble"></div>
+      <div class="msg-actions"></div>
       <div class="msg-time">${now()}</div>
     </div>`;
   chatArea.appendChild(el);
   scrollBottom();
   return {
-    bubble: el.querySelector('.bubble'),
-    body:   el.querySelector('.msg-body'),
+    bubble:  el.querySelector('.bubble'),
+    actions: el.querySelector('.msg-actions'),
+    body:    el.querySelector('.msg-body'),
   };
+}
+
+function addCopyBtn(actions, bubble) {
+  const btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> Copy`;
+  btn.onclick = () => {
+    const text = bubble.innerText || bubble.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.classList.add('copied');
+      btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg> Copied`;
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> Copy`;
+      }, 2000);
+    });
+  };
+  actions.appendChild(btn);
 }
 
 function appendTyping() {
