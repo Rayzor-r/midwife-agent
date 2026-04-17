@@ -1,6 +1,6 @@
 """
 Midwife AI Agent — Backend
-FastAPI · Anthropic streaming · Google Drive RAG · Google Calendar · Outlook Email
+FastAPI · Anthropic streaming · Google Drive RAG · Google Calendar · Gmail
 GC Advisory — gcadvisory.co.nz
 """
 
@@ -15,7 +15,7 @@ from typing import Optional
 
 import anthropic
 from dotenv import load_dotenv
-from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -28,10 +28,9 @@ from calendar_integration import (
     get_availability, get_google_credentials, list_events, update_event,
 )
 from drive_integration import sync_drive_to_knowledge_base
-from outlook_integration import (
-    build_ms_auth_url, create_draft, delete_draft, exchange_ms_code,
-    get_email, get_ms_token, get_thread, list_drafts, list_inbox,
-    mark_read, search_emails, update_draft,
+from gmail_integration import (
+    create_draft, delete_draft, get_email, get_thread,
+    list_drafts, list_inbox, mark_read, search_emails, update_draft,
 )
 
 # ── App ────────────────────────────────────────────────────────────────────────
@@ -46,7 +45,7 @@ BASE_URL = os.getenv("RAILWAY_PUBLIC_DOMAIN", "http://localhost:8000")
 if not BASE_URL.startswith("http"):
     BASE_URL = f"https://{BASE_URL}"
 
-# ── Document store (in-memory RAG) ─────────────────────────────────────────────
+# ── Document store ─────────────────────────────────────────────────────────────
 document_store: dict = {}
 CHUNK_SIZE    = 650
 CHUNK_OVERLAP = 120
@@ -90,7 +89,7 @@ def extract_text(file_bytes: bytes, filename: str) -> str:
 
 
 def search_documents(query: str, top_k: int = 10) -> list[dict]:
-    clean  = lambda s: re.sub(r"[^\w\s]", "", s.lower())
+    clean   = lambda s: re.sub(r"[^\w\s]", "", s.lower())
     q_words = set(clean(query).split())
     if not q_words:
         return []
@@ -98,7 +97,7 @@ def search_documents(query: str, top_k: int = 10) -> list[dict]:
     for doc in document_store.values():
         for chunk in doc["chunks"]:
             c_words = set(clean(chunk["text"]).split())
-            score = len(q_words & c_words)
+            score   = len(q_words & c_words)
             if clean(query) in clean(chunk["text"]):
                 score += 3
             if score > 0:
@@ -115,7 +114,7 @@ def build_system_prompt(chunks: list[dict]) -> str:
         "in Northland, New Zealand.\n\n"
         "You help with four things:\n"
         "1. Clinical policy and guideline questions — answered from Google Drive documents\n"
-        "2. Professional email drafting — in the midwife's voice, saved as Outlook drafts (never sent automatically)\n"
+        "2. Professional email drafting — in the midwife's voice, saved as Gmail drafts (never sent automatically)\n"
         "3. Calendar management — checking availability, booking, viewing, editing and cancelling appointments\n"
         "4. Scheduling and referral support\n\n"
         "How to respond:\n"
@@ -125,7 +124,7 @@ def build_system_prompt(chunks: list[dict]) -> str:
         "• Cite the source document whenever drawing from loaded guidelines.\n"
         "• If information is not in the loaded documents, say so — do not guess.\n"
         "• Flag urgent or transfer-level clinical situations clearly at the top.\n"
-        "• For email drafts: always confirm the draft has been saved to Outlook Drafts for review.\n"
+        "• For email drafts: always confirm the draft has been saved to Gmail Drafts for review.\n"
         "• For calendar: confirm bookings with date, time and duration.\n"
         "• You are NOT a clinical decision tool. State this briefly if relevant.\n"
         "• Never process identifiable client information (names, NHI numbers, clinical records).\n"
@@ -133,7 +132,7 @@ def build_system_prompt(chunks: list[dict]) -> str:
         "Tone: Warm, precise, collegial. Like a well-informed colleague speaking clearly under time pressure."
     )
     if chunks:
-        seen_docs = list({c["doc_name"] for c in chunks})
+        seen_docs     = list({c["doc_name"] for c in chunks})
         context_block = "\n\n---\n\n".join(
             f"[From: {c['doc_name']}]\n{c['text']}" for c in chunks
         )
@@ -145,8 +144,8 @@ def build_system_prompt(chunks: list[dict]) -> str:
         )
     else:
         base += (
-            "\n\nNote: No documents are currently loaded. The Google Drive folder may need syncing. "
-            "Ask the user to trigger a Drive sync or upload documents manually."
+            "\n\nNote: No documents are currently loaded. Ask the user to trigger a Drive sync "
+            "or upload documents manually."
         )
     return base
 
@@ -162,7 +161,7 @@ class ChatRequest(BaseModel):
 
 class CreateEventRequest(BaseModel):
     title: str
-    start_datetime: str          # ISO 8601 e.g. "2026-05-01T14:00:00"
+    start_datetime: str
     duration_minutes: Optional[int] = None
     description: Optional[str] = ""
     location: Optional[str] = ""
@@ -184,6 +183,8 @@ class DraftEmailRequest(BaseModel):
 
 class UpdateDraftRequest(BaseModel):
     draft_id: str
+    to: list[str]
+    subject: str
     body_html: str
 
 
@@ -274,7 +275,7 @@ async def delete_document(doc_id: str):
     return {"message": f"Removed '{name}'"}
 
 
-# ── Google OAuth ───────────────────────────────────────────────────────────────
+# ── Google OAuth (covers Calendar, Drive and Gmail) ────────────────────────────
 
 @app.get("/auth/google")
 async def google_auth_start():
@@ -287,18 +288,18 @@ async def google_auth_start():
 
 
 @app.get("/auth/google/callback")
-async def google_auth_callback(code: str = Query(...), state: str = Query(default="")):
+async def google_auth_callback(code: str = Query(...)):
     redirect_uri = f"{BASE_URL}/auth/google/callback"
     flow = build_google_flow(redirect_uri)
     flow.fetch_token(code=code)
-    creds = flow.credentials
-    token_dict = credentials_to_dict(creds)
+    creds    = flow.credentials
+    tok_dict = credentials_to_dict(creds)
     return HTMLResponse(f"""
-    <html><body style="font-family:sans-serif;padding:40px">
+    <html><body style="font-family:sans-serif;padding:40px;max-width:700px">
     <h2>Google connected ✓</h2>
-    <p>Copy this token and add it as the <strong>GOOGLE_TOKEN</strong> environment variable in Railway:</p>
-    <textarea rows="6" style="width:100%;font-size:12px">{json.dumps(token_dict)}</textarea>
-    <p>After saving in Railway, redeploy the service. Then close this tab.</p>
+    <p>Copy the token below and add it as <strong>GOOGLE_TOKEN</strong> in Railway Variables.</p>
+    <textarea rows="8" style="width:100%;font-size:11px;font-family:monospace">{json.dumps(tok_dict)}</textarea>
+    <p style="margin-top:16px">After saving in Railway, redeploy the service. Then close this tab.</p>
     </body></html>
     """)
 
@@ -306,39 +307,10 @@ async def google_auth_callback(code: str = Query(...), state: str = Query(defaul
 @app.get("/api/google/status")
 async def google_status():
     creds = get_google_credentials()
-    return {"connected": creds is not None and creds.valid}
-
-
-# ── Microsoft OAuth ────────────────────────────────────────────────────────────
-
-@app.get("/auth/outlook")
-async def outlook_auth_start():
-    redirect_uri = f"{BASE_URL}/auth/outlook/callback"
-    auth_url = build_ms_auth_url(redirect_uri)
-    return RedirectResponse(auth_url)
-
-
-@app.get("/auth/outlook/callback")
-async def outlook_auth_callback(code: str = Query(...)):
-    redirect_uri = f"{BASE_URL}/auth/outlook/callback"
-    try:
-        token_data = exchange_ms_code(code, redirect_uri)
-    except Exception as e:
-        raise HTTPException(400, str(e))
-    return HTMLResponse(f"""
-    <html><body style="font-family:sans-serif;padding:40px">
-    <h2>Outlook connected ✓</h2>
-    <p>Copy this token and add it as the <strong>OUTLOOK_TOKEN</strong> environment variable in Railway:</p>
-    <textarea rows="6" style="width:100%;font-size:12px">{json.dumps(token_data)}</textarea>
-    <p>After saving in Railway, redeploy the service. Then close this tab.</p>
-    </body></html>
-    """)
-
-
-@app.get("/api/outlook/status")
-async def outlook_status():
-    token = get_ms_token()
-    return {"connected": token is not None}
+    return {
+        "connected": creds is not None and creds.valid,
+        "scopes": list(creds.scopes) if creds else [],
+    }
 
 
 # ── Google Drive sync ──────────────────────────────────────────────────────────
@@ -357,16 +329,12 @@ async def drive_sync(force: bool = False):
 
 @app.get("/api/drive/status")
 async def drive_status():
-    creds = get_google_credentials()
+    creds     = get_google_credentials()
     folder_id = os.getenv("GOOGLE_DRIVE_FOLDER_ID", "")
-    return {
-        "connected": creds is not None,
-        "folder_id": folder_id,
-        "docs_loaded": len(document_store),
-    }
+    return {"connected": creds is not None, "folder_id": folder_id, "docs_loaded": len(document_store)}
 
 
-# ── Calendar endpoints ─────────────────────────────────────────────────────────
+# ── Calendar ───────────────────────────────────────────────────────────────────
 
 def _require_google():
     creds = get_google_credentials()
@@ -425,48 +393,41 @@ async def calendar_availability(date: str, duration: int = 45):
         raise HTTPException(500, str(e))
 
 
-# ── Outlook email endpoints ────────────────────────────────────────────────────
-
-def _require_outlook():
-    token = get_ms_token()
-    if not token:
-        raise HTTPException(401, "Outlook not connected. Visit /auth/outlook first.")
-    return token
-
+# ── Gmail ──────────────────────────────────────────────────────────────────────
 
 @app.get("/api/email/inbox")
 async def email_inbox(top: int = 20, unread_only: bool = False):
-    token = _require_outlook()
+    creds = _require_google()
     try:
-        return list_inbox(token, top=top, unread_only=unread_only)
+        return list_inbox(creds, max_results=top, unread_only=unread_only)
     except Exception as e:
         raise HTTPException(500, str(e))
 
 
 @app.get("/api/email/message/{message_id}")
 async def email_get(message_id: str):
-    token = _require_outlook()
+    creds = _require_google()
     try:
-        return get_email(token, message_id)
+        return get_email(creds, message_id)
     except Exception as e:
         raise HTTPException(500, str(e))
 
 
-@app.get("/api/email/thread/{conversation_id}")
-async def email_thread(conversation_id: str):
-    token = _require_outlook()
+@app.get("/api/email/thread/{thread_id}")
+async def email_thread(thread_id: str):
+    creds = _require_google()
     try:
-        return get_thread(token, conversation_id)
+        return get_thread(creds, thread_id)
     except Exception as e:
         raise HTTPException(500, str(e))
 
 
 @app.post("/api/email/draft")
 async def email_create_draft(req: DraftEmailRequest):
-    """Create a draft in Outlook. Never sends automatically."""
-    token = _require_outlook()
+    """Create a Gmail draft. Never sends automatically."""
+    creds = _require_google()
     try:
-        return create_draft(token, req.to, req.subject, req.body_html,
+        return create_draft(creds, req.to, req.subject, req.body_html,
                             req.reply_to_id, req.cc)
     except Exception as e:
         raise HTTPException(500, str(e))
@@ -474,45 +435,45 @@ async def email_create_draft(req: DraftEmailRequest):
 
 @app.patch("/api/email/draft")
 async def email_update_draft(req: UpdateDraftRequest):
-    token = _require_outlook()
+    creds = _require_google()
     try:
-        return update_draft(token, req.draft_id, req.body_html)
+        return update_draft(creds, req.draft_id, req.to, req.subject, req.body_html)
     except Exception as e:
         raise HTTPException(500, str(e))
 
 
 @app.delete("/api/email/draft/{draft_id}")
 async def email_delete_draft(draft_id: str):
-    token = _require_outlook()
+    creds = _require_google()
     try:
-        return delete_draft(token, draft_id)
+        return delete_draft(creds, draft_id)
     except Exception as e:
         raise HTTPException(500, str(e))
 
 
 @app.get("/api/email/drafts")
 async def email_list_drafts():
-    token = _require_outlook()
+    creds = _require_google()
     try:
-        return list_drafts(token)
+        return list_drafts(creds)
     except Exception as e:
         raise HTTPException(500, str(e))
 
 
 @app.get("/api/email/search")
 async def email_search(q: str, top: int = 10):
-    token = _require_outlook()
+    creds = _require_google()
     try:
-        return search_emails(token, q, top)
+        return search_emails(creds, q, top)
     except Exception as e:
         raise HTTPException(500, str(e))
 
 
 @app.post("/api/email/read/{message_id}")
 async def email_mark_read(message_id: str):
-    token = _require_outlook()
+    creds = _require_google()
     try:
-        return mark_read(token, message_id)
+        return mark_read(creds, message_id)
     except Exception as e:
         raise HTTPException(500, str(e))
 
@@ -521,12 +482,12 @@ async def email_mark_read(message_id: str):
 
 @app.get("/api/health")
 async def health():
+    creds = get_google_credentials()
     return {
-        "status": "ok",
-        "documents": len(document_store),
-        "total_chunks": sum(d["chunk_count"] for d in document_store.values()),
-        "google_connected": get_google_credentials() is not None,
-        "outlook_connected": get_ms_token() is not None,
+        "status":           "ok",
+        "documents":        len(document_store),
+        "total_chunks":     sum(d["chunk_count"] for d in document_store.values()),
+        "google_connected": creds is not None,
     }
 
 

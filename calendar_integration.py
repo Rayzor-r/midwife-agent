@@ -17,6 +17,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 GOOGLE_SCOPES = [
+    "https://www.googleapis.com/auth/gmail.modify",
     "https://www.googleapis.com/auth/calendar",
     "https://www.googleapis.com/auth/drive.readonly",
 ]
