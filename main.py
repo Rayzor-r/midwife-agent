@@ -279,18 +279,17 @@ async def delete_document(doc_id: str):
 
 @app.get("/auth/google")
 async def google_auth_start():
-    redirect_uri = f"{BASE_URL}/auth/google/callback"
-    flow = build_google_flow(redirect_uri)
+    flow = build_google_flow()
     auth_url, _ = flow.authorization_url(
-        access_type="offline", include_granted_scopes="true", prompt="consent"
+        access_type="offline", include_granted_scopes="true",
+        prompt="consent", state="gcadvisory"
     )
     return RedirectResponse(auth_url)
 
 
 @app.get("/auth/google/callback")
-async def google_auth_callback(code: str = Query(...)):
-    redirect_uri = f"{BASE_URL}/auth/google/callback"
-    flow = build_google_flow(redirect_uri)
+async def google_auth_callback(code: str = Query(...), state: str = Query(default="")):
+    flow = build_google_flow()
     flow.fetch_token(code=code)
     creds    = flow.credentials
     tok_dict = credentials_to_dict(creds)

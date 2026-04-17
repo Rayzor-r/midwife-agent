@@ -61,15 +61,18 @@ def credentials_to_dict(creds: Credentials) -> dict:
     }
 
 
-def build_google_flow(redirect_uri: str) -> Flow:
+REDIRECT_URI = "https://midwife-agent-production.up.railway.app/auth/google/callback"
+
+def build_google_flow(redirect_uri: str = None) -> Flow:
+    uri = redirect_uri or REDIRECT_URI
     config = {"web": {
         "client_id": os.getenv("GOOGLE_CLIENT_ID"),
         "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
         "token_uri": "https://oauth2.googleapis.com/token",
-        "redirect_uris": [redirect_uri],
+        "redirect_uris": [uri],
     }}
-    return Flow.from_client_config(config, scopes=GOOGLE_SCOPES, redirect_uri=redirect_uri)
+    return Flow.from_client_config(config, scopes=GOOGLE_SCOPES, redirect_uri=uri)
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
