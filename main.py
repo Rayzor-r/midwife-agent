@@ -32,6 +32,7 @@ from gmail_integration import (
     create_draft, delete_draft, get_email, get_thread,
     list_drafts, list_inbox, mark_read, search_emails, update_draft,
 )
+from email_watcher import start_watcher, stop_watcher, watcher_status
 
 # ── App ────────────────────────────────────────────────────────────────────────
 app = FastAPI(title="Midwife AI Agent", version="2.0.0")
@@ -112,10 +113,14 @@ def build_system_prompt(chunks: list[dict]) -> str:
     base = (
         "You are a clinical support assistant for a Licensed Maternity Carer (LMC) midwifery practice "
         "in Northland, New Zealand.\n\n"
+        "You have LIVE access to the following integrated systems:\n"
+        "- Google Calendar: you can check availability, list events, book, edit and cancel appointments. Use /api/calendar/* endpoints.\n"
+        "- Gmail: you can read inbox, search emails, create and update drafts. Drafts are always saved for human review — never sent automatically. Use /api/email/* endpoints.\n"
+        "- Google Drive: clinical policy documents are loaded from the knowledge base below. Use /api/drive/sync to refresh.\n\n"
         "You help with four things:\n"
-        "1. Clinical policy and guideline questions — answered from Google Drive documents\n"
-        "2. Professional email drafting — in the midwife's voice, saved as Gmail drafts (never sent automatically)\n"
-        "3. Calendar management — checking availability, booking, viewing, editing and cancelling appointments\n"
+        "1. Clinical policy and guideline questions — answered from loaded Google Drive documents\n"
+        "2. Professional email drafting — in the midwife's voice, saved as Gmail drafts for review before sending\n"
+        "3. Calendar management — checking availability, booking, viewing, editing and cancelling appointments directly in Google Calendar\n"
         "4. Scheduling and referral support\n\n"
         "How to respond:\n"
         "• Be concise and direct. No filler phrases.\n"
@@ -488,6 +493,31 @@ async def health():
         "total_chunks":     sum(d["chunk_count"] for d in document_store.values()),
         "google_connected": creds is not None,
     }
+
+
+# ── Email watcher ──────────────────────────────────────────────────────────────
+
+@app.on_event("startup")
+async def startup_event():
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    start_watcher(
+        get_creds_fn=get_google_credentials,
+        document_store=document_store,
+        search_fn=search_documents,
+        poll_interval=120,
+    )
+
+
+@app.get("/api/watcher/status")
+async def get_watcher_status():
+    return watcher_status()
+
+
+@app.post("/api/watcher/stop")
+async def stop_watcher_endpoint():
+    stop_watcher()
+    return {"message": "Watcher stop requested."}
 
 
 # ── Entry ──────────────────────────────────────────────────────────────────────
