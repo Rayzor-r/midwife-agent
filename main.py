@@ -1,7 +1,10 @@
 """
 Midwife AI Agent — Backend
-FastAPI · Anthropic streaming · Google Drive RAG · Google Calendar · Gmail
+FastAPI · Anthropic tool use · Google Drive RAG · Google Calendar · Gmail · Note tidy
 GC Advisory — gcadvisory.co.nz
+
+v2.1 — Tool use loop added so Claude actually calls the integrations instead
+       of hallucinating confirmations. Note tidy feature added.
 """
 
 import io
@@ -33,9 +36,10 @@ from gmail_integration import (
     list_drafts, list_inbox, mark_read, search_emails, update_draft,
 )
 from email_watcher import start_watcher, stop_watcher, watcher_status
+from note_tidy import list_note_files, tidy_note_file, tidy_note_text
 
 # ── App ────────────────────────────────────────────────────────────────────────
-app = FastAPI(title="Midwife AI Agent", version="2.0.0")
+app = FastAPI(title="Midwife AI Agent", version="2.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 static_dir = Path(__file__).parent / "static"
@@ -45,6 +49,9 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 BASE_URL = os.getenv("RAILWAY_PUBLIC_DOMAIN", "http://localhost:8000")
 if not BASE_URL.startswith("http"):
     BASE_URL = f"https://{BASE_URL}"
+
+# Anthropic model. Confirm this matches your account's available models.
+CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5")
 
 # ── Document store ─────────────────────────────────────────────────────────────
 document_store: dict = {}
@@ -111,63 +118,308 @@ def search_documents(query: str, top_k: int = 10) -> list[dict]:
 
 def build_system_prompt(chunks: list[dict]) -> str:
     base = (
-        "You are a clinical support assistant for a Licensed Maternity Carer (LMC) midwifery practice "
-        "in Northland, New Zealand.\n\n"
-        "You have LIVE access to the following integrated systems. Use ONLY these exact endpoints:\n\n"
-        "GOOGLE CALENDAR:\n"
-        "- List events: GET /api/calendar/events?days=14\n"
-        "- Availability: GET /api/calendar/availability?date=YYYY-MM-DD\u0026duration=45\n"
-        "- Book: POST /api/calendar/events {title, start_datetime, duration_minutes, description, location}\n"
-        "- Edit: PATCH /api/calendar/events {event_id, title, start_datetime, duration_minutes}\n"
-        "- Cancel: DELETE /api/calendar/events/{event_id}\n\n"
-        "GMAIL:\n"
-        "- Inbox: GET /api/email/inbox\n"
-        "- Get email: GET /api/email/message/{id}\n"
-        "- Create draft: POST /api/email/draft {to, subject, body_html, reply_to_id}\n"
-        "- Search: GET /api/email/search?q=query\n"
-        "- List drafts: GET /api/email/drafts\n\n"
-        "CRITICAL RULES — NEVER BREAK THESE:\n"
-        "1. NEVER say you do not have access to the calendar, email, or integrations. They are LIVE and fully authenticated.\n"
-        "2. NEVER generate disclaimers about API credentials, illustrative calls, or needing to set up integrations.\n"
-        "3. NEVER suggest Zapier, Make, or any third-party connector. Everything is already built and running.\n"
-        "4. When you see [SYSTEM: Live data...] blocks in the conversation, use that data directly to answer. Do not question it.\n"
-        "5. NEVER say things like 'I need to flag something', 'honest note', or 'I don't have real credentials'.\n\n"
-        "You help with four things:\n"
-        "1. Clinical policy and guideline questions — answered from loaded Google Drive documents\n"
-        "2. Professional email drafting — in the midwife's voice, saved as Gmail drafts for review before sending\n"
-        "3. Calendar management — checking availability, booking, viewing, editing and cancelling appointments directly in Google Calendar\n"
-        "4. Scheduling and referral support\n\n"
-        "How to respond:\n"
-        "• Be concise and direct. No filler phrases.\n"
-        "• Use plain, professional language a midwife can use straight away.\n"
-        "• Structure responses with clear headings and short paragraphs.\n"
-        "• Cite the source document whenever drawing from loaded guidelines.\n"
-        "• If information is not in the loaded documents, say so — do not guess.\n"
-        "• Flag urgent or transfer-level clinical situations clearly at the top.\n"
-        "• For email drafts: always confirm the draft has been saved to Gmail Drafts for review.\n"
-        "• For calendar: confirm bookings with date, time and duration.\n"
-        "• You are NOT a clinical decision tool. State this briefly if relevant.\n"
-        "• Never process identifiable client information (names, NHI numbers, clinical records).\n"
-        "• You operate under the NZ Privacy Act 2020.\n\n"
-        "Tone: Warm, precise, collegial. Like a well-informed colleague speaking clearly under time pressure."
+        "You are a clinical support assistant for a Licensed Maternity Carer "
+        "(LMC) midwifery practice in Northland, New Zealand.\n\n"
+
+        "You have LIVE tools for:\n"
+        "  • Google Calendar — check availability, book, reschedule, cancel\n"
+        "  • Gmail — read inbox, search, draft emails (drafts only, never sent)\n"
+        "  • Note tidy — reformat de-identified shorthand notes into a standard "
+        "structure, for notes in the dedicated Drive folder OR pasted directly\n\n"
+
+        "HOW TO USE THE TOOLS:\n"
+        "1. If the midwife asks about her schedule, bookings, or availability, "
+        "call the calendar tools. Do not ask her to repeat details you can see "
+        "by calling list_calendar_events.\n"
+        "2. For any booking, call check_availability first, confirm the slot "
+        "with her in plain English, then call book_appointment.\n"
+        "3. For emails, always save as a draft for her review. Never claim "
+        "something was sent.\n"
+        "4. For note tidying, use tidy_note_from_drive when she refers to a "
+        "file in the notes folder, and tidy_pasted_note when she includes the "
+        "note text in her message. Return the tidied output clearly, and "
+        "always surface any flags the tool reports.\n\n"
+
+        "ABSOLUTE RULES:\n"
+        "• Never say you lack access to the calendar, email, or Drive. "
+        "The tools are live.\n"
+        "• Never fabricate a confirmation. Only confirm an action after the "
+        "matching tool call has returned a successful result.\n"
+        "• Never process identifiable client information (names, NHI numbers, "
+        "addresses, DOBs). If the midwife includes identifiable detail, ask "
+        "her to re-send with identifiers removed.\n"
+        "• You are NOT a clinical decision tool. If asked for clinical "
+        "advice, state this briefly and point to the loaded guidelines.\n"
+        "• You operate under the NZ Privacy Act 2020 and Health Information "
+        "Privacy Code 2020.\n\n"
+
+        "RESPONSE STYLE:\n"
+        "• Concise and direct. No filler, no marketing tone.\n"
+        "• Plain professional language a midwife can use straight away.\n"
+        "• Cite the source document when drawing from loaded guidelines.\n"
+        "• If information isn't in the loaded documents or tool results, "
+        "say so rather than guess.\n"
+        "• Flag urgent or transfer-level clinical situations at the top.\n"
+        "• For calendar: confirm bookings with date, time and duration, "
+        "using the data returned by the tool.\n"
+        "• For tidied notes: show the tidied output, then any flags the "
+        "tool returned, then a one-line reminder that she should review "
+        "before copying into her clinical record.\n\n"
+
+        "TONE: Warm, precise, collegial. Like a well-informed colleague "
+        "speaking clearly under time pressure."
     )
+
     if chunks:
         seen_docs     = list({c["doc_name"] for c in chunks})
         context_block = "\n\n---\n\n".join(
             f"[From: {c['doc_name']}]\n{c['text']}" for c in chunks
         )
         base += (
-            f"\n\n── LOADED DOCUMENT EXCERPTS ──────────────────────────────────\n"
+            "\n\n── LOADED DOCUMENT EXCERPTS ──────────────────────────────\n"
             f"Sources: {', '.join(seen_docs)}\n\n{context_block}\n\n"
-            f"── END OF DOCUMENT CONTEXT ───────────────────────────────────\n"
-            "Use the excerpts above to ground your answer. Always cite which document you draw from."
+            "── END OF DOCUMENT CONTEXT ───────────────────────────────────\n"
+            "Use the excerpts above to ground clinical answers. "
+            "Always cite which document you draw from."
         )
     else:
         base += (
-            "\n\nNote: No documents are currently loaded. Ask the user to trigger a Drive sync "
-            "or upload documents manually."
+            "\n\nNote: No policy documents are currently loaded. If the midwife "
+            "asks a policy question, tell her to trigger a Drive sync or upload "
+            "documents."
         )
     return base
+
+
+# ── Tool definitions ───────────────────────────────────────────────────────────
+
+TOOLS = [
+    # Calendar
+    {
+        "name": "list_calendar_events",
+        "description": (
+            "List upcoming appointments from Google Calendar. "
+            "Use when the midwife asks what's on her schedule."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "days_ahead": {"type": "integer", "description": "Defaults to 14"},
+            },
+        },
+    },
+    {
+        "name": "check_availability",
+        "description": (
+            "Return free slots between 8am and 5pm NZ time on a given date. "
+            "Call this BEFORE booking to confirm a slot is free."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "date": {"type": "string", "description": "YYYY-MM-DD"},
+                "duration_minutes": {"type": "integer", "description": "Default 45"},
+            },
+            "required": ["date"],
+        },
+    },
+    {
+        "name": "book_appointment",
+        "description": (
+            "Create an appointment in Google Calendar. "
+            "Only call after the midwife has confirmed the details."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string"},
+                "start_datetime": {
+                    "type": "string",
+                    "description": "ISO 8601 in NZ time, e.g. 2026-05-14T14:00:00",
+                },
+                "duration_minutes": {"type": "integer"},
+                "description": {"type": "string"},
+                "location": {"type": "string"},
+            },
+            "required": ["title", "start_datetime"],
+        },
+    },
+    {
+        "name": "reschedule_appointment",
+        "description": "Update an existing appointment by event_id.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "event_id": {"type": "string"},
+                "title": {"type": "string"},
+                "start_datetime": {"type": "string"},
+                "duration_minutes": {"type": "integer"},
+            },
+            "required": ["event_id"],
+        },
+    },
+    {
+        "name": "cancel_appointment",
+        "description": "Delete an appointment by event_id.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"event_id": {"type": "string"}},
+            "required": ["event_id"],
+        },
+    },
+    # Gmail
+    {
+        "name": "list_inbox",
+        "description": "List recent emails from Gmail.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "max_results": {"type": "integer", "description": "Default 20"},
+                "unread_only": {"type": "boolean"},
+            },
+        },
+    },
+    {
+        "name": "search_emails",
+        "description": "Search Gmail, e.g. 'from:teams referral', 'subject:GBS'.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"query": {"type": "string"}},
+            "required": ["query"],
+        },
+    },
+    {
+        "name": "get_email",
+        "description": "Fetch one email by id to read its full content.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"message_id": {"type": "string"}},
+            "required": ["message_id"],
+        },
+    },
+    {
+        "name": "draft_email",
+        "description": (
+            "Save an email as a draft in Gmail for the midwife to review. "
+            "NEVER sends. Always save as draft."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "to": {"type": "array", "items": {"type": "string"}},
+                "subject": {"type": "string"},
+                "body_html": {"type": "string"},
+                "reply_to_id": {"type": "string"},
+                "cc": {"type": "array", "items": {"type": "string"}},
+            },
+            "required": ["to", "subject", "body_html"],
+        },
+    },
+    # Note tidy
+    {
+        "name": "list_note_files",
+        "description": (
+            "List de-identified shorthand notes in the dedicated notes folder "
+            "on Google Drive."
+        ),
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "tidy_note_from_drive",
+        "description": (
+            "Download one note from the Drive notes folder and return a tidied "
+            "version in a standard antenatal / labour / postnatal structure. "
+            "Never changes wording, never adds information, flags ambiguities. "
+            "Nothing is saved back."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "file_id":   {"type": "string"},
+                "filename":  {"type": "string"},
+                "mime_type": {"type": "string"},
+            },
+            "required": ["file_id", "filename", "mime_type"],
+        },
+    },
+    {
+        "name": "tidy_pasted_note",
+        "description": (
+            "Tidy a note the midwife has pasted directly into the chat."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"note_text": {"type": "string"}},
+            "required": ["note_text"],
+        },
+    },
+]
+
+
+def _run_tool(name: str, args: dict) -> dict:
+    """Execute a tool. Errors returned as {'error': ...}, not raised."""
+    creds = get_google_credentials()
+    if not creds:
+        return {"error": "Google is not connected. Visit /auth/google."}
+
+    try:
+        # Calendar
+        if name == "list_calendar_events":
+            return {"events": list_events(creds, args.get("days_ahead", 14))}
+        if name == "check_availability":
+            d = datetime.fromisoformat(args["date"])
+            return {"slots": get_availability(creds, d, args.get("duration_minutes", 45))}
+        if name == "book_appointment":
+            start = datetime.fromisoformat(args["start_datetime"])
+            return create_event(
+                creds, title=args["title"], start_dt=start,
+                duration_minutes=args.get("duration_minutes"),
+                description=args.get("description", ""),
+                location=args.get("location", ""),
+            )
+        if name == "reschedule_appointment":
+            start = (datetime.fromisoformat(args["start_datetime"])
+                     if args.get("start_datetime") else None)
+            return update_event(
+                creds, event_id=args["event_id"], title=args.get("title"),
+                start_dt=start, duration_minutes=args.get("duration_minutes"),
+            )
+        if name == "cancel_appointment":
+            return cancel_event(creds, args["event_id"])
+
+        # Gmail
+        if name == "list_inbox":
+            return {"messages": list_inbox(
+                creds, max_results=args.get("max_results", 20),
+                unread_only=args.get("unread_only", False),
+            )}
+        if name == "search_emails":
+            return {"messages": search_emails(creds, args["query"])}
+        if name == "get_email":
+            return get_email(creds, args["message_id"])
+        if name == "draft_email":
+            return create_draft(
+                creds, to=args["to"], subject=args["subject"],
+                body_html=args["body_html"],
+                reply_to_id=args.get("reply_to_id"),
+                cc=args.get("cc"),
+            )
+
+        # Note tidy
+        if name == "list_note_files":
+            return {"files": list_note_files(creds)}
+        if name == "tidy_note_from_drive":
+            return tidy_note_file(
+                creds, file_id=args["file_id"],
+                filename=args["filename"], mime_type=args["mime_type"],
+            )
+        if name == "tidy_pasted_note":
+            return tidy_note_text(args["note_text"])
+
+        return {"error": f"Unknown tool: {name}"}
+
+    except Exception as e:
+        return {"error": str(e)}
 
 
 # ── Models ─────────────────────────────────────────────────────────────────────
@@ -218,7 +470,7 @@ async def serve_frontend():
     return HTMLResponse("<h1>index.html not found in static/</h1>", status_code=404)
 
 
-# ── Chat ───────────────────────────────────────────────────────────────────────
+# ── Chat (with tool-use loop) ──────────────────────────────────────────────────
 
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
@@ -233,25 +485,56 @@ async def chat(request: ChatRequest):
     messages      = [{"role": m.role, "content": m.content} for m in request.messages]
 
     async def generate():
+        client = anthropic.AsyncAnthropic(api_key=api_key)
         try:
-            client = anthropic.AsyncAnthropic(api_key=api_key)
-            async with client.messages.stream(
-                model="claude-sonnet-4-6",
-                max_tokens=2048,
-                system=system,
-                messages=messages,
-            ) as stream:
-                async for text in stream.text_stream:
-                    yield f"data: {json.dumps({'text': text})}\n\n"
+            for _ in range(8):  # cap tool-use iterations
+                resp = await client.messages.create(
+                    model=CLAUDE_MODEL,
+                    max_tokens=2048,
+                    system=system,
+                    tools=TOOLS,
+                    messages=messages,
+                )
+
+                # Stream any text blocks.
+                for block in resp.content:
+                    if block.type == "text" and block.text:
+                        yield f"data: {json.dumps({'text': block.text})}\n\n"
+
+                if resp.stop_reason != "tool_use":
+                    break
+
+                tool_results = []
+                for block in resp.content:
+                    if block.type == "tool_use":
+                        result = _run_tool(block.name, block.input)
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": block.id,
+                            "content": json.dumps(result, default=str),
+                        })
+                        yield (
+                            f"data: {json.dumps({'tool': block.name, 'result': result}, default=str)}\n\n"
+                        )
+
+                messages.append({
+                    "role": "assistant",
+                    "content": [b.model_dump() for b in resp.content],
+                })
+                messages.append({"role": "user", "content": tool_results})
+
             if chunks:
                 sources = list({c["doc_name"] for c in chunks})
                 yield f"data: {json.dumps({'sources': sources})}\n\n"
             yield f"data: {json.dumps({'done': True})}\n\n"
+
         except Exception as exc:
             yield f"data: {json.dumps({'error': str(exc)})}\n\n"
 
-    return StreamingResponse(generate(), media_type="text/event-stream",
-                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+    return StreamingResponse(
+        generate(), media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 # ── Manual document upload ─────────────────────────────────────────────────────
@@ -295,7 +578,7 @@ async def delete_document(doc_id: str):
     return {"message": f"Removed '{name}'"}
 
 
-# ── Google OAuth (covers Calendar, Drive and Gmail) ────────────────────────────
+# ── Google OAuth ───────────────────────────────────────────────────────────────
 
 @app.get("/auth/google")
 async def google_auth_start():
@@ -340,8 +623,7 @@ async def drive_sync(force: bool = False):
     if not creds:
         raise HTTPException(401, "Google not connected. Visit /auth/google first.")
     try:
-        result = sync_drive_to_knowledge_base(creds, document_store, chunk_text, force_full=force)
-        return result
+        return sync_drive_to_knowledge_base(creds, document_store, chunk_text, force_full=force)
     except Exception as e:
         raise HTTPException(500, str(e))
 
@@ -443,7 +725,6 @@ async def email_thread(thread_id: str):
 
 @app.post("/api/email/draft")
 async def email_create_draft(req: DraftEmailRequest):
-    """Create a Gmail draft. Never sends automatically."""
     creds = _require_google()
     try:
         return create_draft(creds, req.to, req.subject, req.body_html,
@@ -497,6 +778,20 @@ async def email_mark_read(message_id: str):
         raise HTTPException(500, str(e))
 
 
+# ── Notes (status endpoint for diagnostics) ────────────────────────────────────
+
+@app.get("/api/notes/list")
+async def notes_list():
+    """Lightweight check that the notes folder is wired up. The actual
+    tidying is done via the chat agent's tools, not via a direct UI call."""
+    creds = _require_google()
+    try:
+        files = list_note_files(creds)
+        return {"count": len(files), "files": files}
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+
 # ── Health ─────────────────────────────────────────────────────────────────────
 
 @app.get("/api/health")
@@ -504,9 +799,12 @@ async def health():
     creds = get_google_credentials()
     return {
         "status":           "ok",
+        "version":          "2.1.0",
         "documents":        len(document_store),
         "total_chunks":     sum(d["chunk_count"] for d in document_store.values()),
         "google_connected": creds is not None,
+        "model":            CLAUDE_MODEL,
+        "notes_folder_set": bool(os.getenv("GOOGLE_DRIVE_NOTES_FOLDER_ID")),
     }
 
 
