@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 Phase: 1 of 3 (Codebase Cleanup)
 Plan: 4 of 4 in current phase — PHASE COMPLETE
 Status: Phase 1 complete, ready for Phase 2
-Last activity: 2026-04-28 — 01-04 complete: .gitignore hardened with credential patterns; git history scan clean (CLEAN-06)
+Last activity: 2026-04-28 — 01-02 complete: files.zip inspected (SAFE — source code only) and removed via normal git rm (CLEAN-03); Phase 1 fully complete
 
 Progress: [████░░░░░░] 33%
 
@@ -49,6 +49,7 @@ Recent decisions affecting current work:
 - 01-01: outlook_integration.py inspected before deletion — no embedded credentials found, uses only env vars (MS_CLIENT_ID, MS_CLIENT_SECRET, MS_TENANT_ID, OUTLOOK_TOKEN); safe to delete without git history purge
 - 01-01: Root index.html confirmed stale (32 KB) vs canonical static/index.html (40 KB) — different sizes prove it is an outdated duplicate
 - 01-03: Default fallback "claude-sonnet-4-5" used in both modules to match main.py — aligns all three Anthropic callers under one env var
+- 01-02: files.zip inspection result: SAFE — contained only source code snapshots (main.py, calendar_integration.py, outlook_integration.py, drive_integration.py, requirements.txt); no credentials or patient data; removed via normal git rm (PATH A); no history purge or force-push required
 - 01-04: Git history scan returned clean (no credentials found) — SEC-04 rotation not urgently required due to history leak, but still recommended given prior browser UI exposure
 
 ### Pending Todos
@@ -58,7 +59,6 @@ None yet.
 ### Blockers/Concerns
 
 - Active testers on production: any change that breaks the chat endpoint or Google integrations is immediately felt — Phase 2 changes must be tested carefully before deploy
-- `files.zip` contents unknown — must inspect before delete; if sensitive, git history purge required (git filter-repo / BFG)
 
 ## Deferred Items
 
@@ -71,5 +71,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-04-28
-Stopped at: Completed 01-04-PLAN.md — .gitignore hardened with credential patterns; git history scan clean (CLEAN-06). Phase 1 complete.
+Stopped at: Completed 01-02-PLAN.md — files.zip inspected (SAFE) and removed; all Phase 1 plans now fully complete (CLEAN-01 through CLEAN-06).
 Resume file: None

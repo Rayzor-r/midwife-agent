@@ -16,7 +16,7 @@
 
 - [x] **CLEAN-01**: `chat_endpoint_patch.py` and `consolidated_patch.py` deleted from repo.
 - [x] **CLEAN-02**: `outlook_integration.py` deleted from repo.
-- [ ] **CLEAN-03**: `files.zip` inspected for sensitive content (patient data, credentials), then removed from the working tree and purged from git history using `git filter-repo` or BFG if sensitive content is found.
+- [x] **CLEAN-03**: `files.zip` inspected for sensitive content (patient data, credentials), then removed from the working tree and purged from git history using `git filter-repo` or BFG if sensitive content is found.
 - [x] **CLEAN-04**: Root `index.html` deleted (canonical UI is `static/index.html`).
 - [x] **CLEAN-05**: Claude model string centralised — one `CLAUDE_MODEL` env-var read in `main.py`; `note_tidy.py` and `email_watcher.py` read from env or accept the model as a parameter rather than hardcoding separate string literals.
 - [x] **CLEAN-06**: `.gitignore` verified to include `.env`, `*.token`, `*.key`, `*.pem`, and common credential file patterns. Confirm no real credentials are currently committed to git history (via `git log --all -p` scan or equivalent).
@@ -61,7 +61,7 @@
 | SEC-04 | Phase 2 | Pending |
 | CLEAN-01 | Phase 1 | Complete (01-01) |
 | CLEAN-02 | Phase 1 | Complete (01-01) |
-| CLEAN-03 | Phase 1 | Pending |
+| CLEAN-03 | Phase 1 | Complete (01-02) |
 | CLEAN-04 | Phase 1 | Complete (01-01) |
 | CLEAN-05 | Phase 1 | Complete (01-03) |
 | CLEAN-06 | Phase 1 | Complete (01-04) |
@@ -75,4 +75,4 @@
 
 ---
 *Requirements defined: 2026-04-28*
-*Last updated: 2026-04-28 after 01-04 completion (CLEAN-06 marked complete; Phase 1 complete)*
+*Last updated: 2026-04-28 after 01-02 completion (CLEAN-03 marked complete; all Phase 1 requirements now complete)*

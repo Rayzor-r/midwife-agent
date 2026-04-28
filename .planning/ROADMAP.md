@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [x] 01-01-PLAN.md — Delete dead patch files, outlook integration, root index.html duplicate
-- [ ] 01-02-PLAN.md — Inspect and remove files.zip (with checkpoint for sensitivity decision)
+- [x] 01-02-PLAN.md — Inspect and remove files.zip (with checkpoint for sensitivity decision)
 - [x] 01-03-PLAN.md — Centralise CLAUDE_MODEL env var in note_tidy.py and email_watcher.py
 - [x] 01-04-PLAN.md — Harden .gitignore with credential patterns and scan git history
 
