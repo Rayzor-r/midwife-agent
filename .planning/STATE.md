@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-04-28)
 
 **Core value:** The agent reliably handles administrative and communication tasks for a working midwife — so that when a new feature or new client is added, there is a safe, auditable foundation to build on.
-**Current focus:** Phase 1 — Codebase Cleanup
+**Current focus:** Phase 2 — Security Hardening
 
 ## Current Position
 
-Phase: 1 of 3 (Codebase Cleanup)
-Plan: 4 of 4 in current phase — PHASE COMPLETE
-Status: Phase 1 complete, ready for Phase 2
-Last activity: 2026-04-28 — 01-02 complete: files.zip inspected (SAFE — source code only) and removed via normal git rm (CLEAN-03); Phase 1 fully complete
+Phase: 2 of 3 (Security Hardening)
+Plan: 0 of TBD in current phase — context gathered, ready to plan
+Status: Phase 2 context captured; ready for /gsd-plan-phase 2
+Last activity: 2026-04-29 — Phase 2 context gathered (discuss mode); 18 decisions locked covering SEC-01 through SEC-04
 
 Progress: [████░░░░░░] 33%
 
@@ -56,9 +56,19 @@ Recent decisions affecting current work:
 
 None yet.
 
+### Decisions (Phase 2 additions)
+
+- 02-discuss: API_KEY is a shared deployment password (memorable phrase), not a random hex string — one per practice, v2.0 concern for per-user keys
+- 02-discuss: Frontend auth = full-screen password overlay (localStorage, type=password), "Sign out" corner link
+- 02-discuss: 401 → clear localStorage + re-show overlay; network failure → distinct "can't reach server" message
+- 02-discuss: SEC-03 = server-log token delivery (no textarea in callback page); SEC-03 must deploy before SEC-04
+- 02-discuss: /api/health exempt from auth middleware; all other /api/* routes protected
+- 02-discuss: email_watcher.py calls Google directly — does NOT go through /api/* — no auth change needed there
+
 ### Blockers/Concerns
 
 - Active testers on production: any change that breaks the chat endpoint or Google integrations is immediately felt — Phase 2 changes must be tested carefully before deploy
+- SEC-04 requires human action in Google Cloud Console (credential rotation) — cannot be fully automated
 
 ## Deferred Items
 
@@ -70,6 +80,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-04-28
-Stopped at: Completed 01-02-PLAN.md — files.zip inspected (SAFE) and removed; all Phase 1 plans now fully complete (CLEAN-01 through CLEAN-06).
-Resume file: None
+Last session: 2026-04-29
+Stopped at: Phase 2 context gathered — 18 implementation decisions locked, CONTEXT.md written.
+Resume file: .planning/phases/02-security-hardening/02-CONTEXT.md
