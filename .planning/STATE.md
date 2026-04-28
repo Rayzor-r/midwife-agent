@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 ## Current Position
 
 Phase: 1 of 3 (Codebase Cleanup)
-Plan: 1 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: Executing
-Last activity: 2026-04-28 — 01-01 complete: deleted chat_endpoint_patch.py, consolidated_patch.py, outlook_integration.py, root index.html
+Last activity: 2026-04-28 — 01-03 complete: centralised CLAUDE_MODEL env var in note_tidy.py and email_watcher.py (CLEAN-05)
 
-Progress: [█░░░░░░░░░] 8%
+Progress: [███░░░░░░░] 23%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 2 min
-- Total execution time: 2 min
+- Total plans completed: 3
+- Average duration: 3 min
+- Total execution time: 9 min (est.)
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Codebase Cleanup | 1 | 2 min | 2 min |
+| 1. Codebase Cleanup | 3 | ~9 min | ~3 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2 min)
-- Trend: —
+- Last 5 plans: 01-01 (2 min), 01-02 (checkpoint), 01-03 (3 min)
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -48,6 +48,7 @@ Recent decisions affecting current work:
 - Roadmap init: Inspect `files.zip` before deleting — may contain patient data or credentials
 - 01-01: outlook_integration.py inspected before deletion — no embedded credentials found, uses only env vars (MS_CLIENT_ID, MS_CLIENT_SECRET, MS_TENANT_ID, OUTLOOK_TOKEN); safe to delete without git history purge
 - 01-01: Root index.html confirmed stale (32 KB) vs canonical static/index.html (40 KB) — different sizes prove it is an outdated duplicate
+- 01-03: Default fallback "claude-sonnet-4-5" used in both modules to match main.py — aligns all three Anthropic callers under one env var
 
 ### Pending Todos
 
@@ -69,5 +70,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-04-28
-Stopped at: Completed 01-01-PLAN.md — dead code deletion (CLEAN-01, CLEAN-02, CLEAN-04)
+Stopped at: Completed 01-03-PLAN.md — CLAUDE_MODEL env var centralised in note_tidy.py and email_watcher.py (CLEAN-05)
 Resume file: None
