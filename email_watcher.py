@@ -12,6 +12,7 @@ import logging
 import os
 import threading
 import time
+from collections import deque
 from datetime import datetime
 
 import anthropic
@@ -19,8 +20,19 @@ import anthropic
 logger = logging.getLogger("email_watcher")
 
 # Track processed email IDs to avoid re-drafting
+_MAX_PROCESSED = 2000
 _processed_ids: set = set()
+_processed_ids_order: deque = deque()
 _watcher_running = False
+
+
+def _track_processed(msg_id: str):
+    if msg_id not in _processed_ids:
+        _processed_ids.add(msg_id)
+        _processed_ids_order.append(msg_id)
+        if len(_processed_ids_order) > _MAX_PROCESSED:
+            old = _processed_ids_order.popleft()
+            _processed_ids.discard(old)
 
 
 # ── Draft generation ───────────────────────────────────────────────────────────
@@ -36,6 +48,8 @@ def generate_draft(
     """
     api_key = os.getenv("ANTHROPIC_API_KEY")
     if not api_key:
+        logger.error("ANTHROPIC_API_KEY not set — cannot generate draft for '%s'",
+                     email.get("subject", ""))
         return None, True
 
     # Search knowledge base for relevant context
@@ -132,7 +146,7 @@ def watch_inbox(get_creds_fn, document_store: dict, search_fn, poll_interval: in
                 if not msg_id or msg_id in _processed_ids:
                     continue
 
-                _processed_ids.add(msg_id)
+                _track_processed(msg_id)
                 new_count += 1
 
                 subject = email.get("subject", "(no subject)")
@@ -167,8 +181,8 @@ def watch_inbox(get_creds_fn, document_store: dict, search_fn, poll_interval: in
                 # Mark original as read so it doesn't get reprocessed
                 try:
                     mark_read(creds, msg_id)
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.warning("Failed to mark email '%s' as read: %s", subject, exc)
 
             if new_count == 0:
                 logger.debug("No new emails.")

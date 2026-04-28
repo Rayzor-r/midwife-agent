@@ -144,7 +144,7 @@ def tidy_note_text(note_text: str) -> dict:
     if tidied.lower().startswith("flags for review"):
         lines = tidied.split("\n")
         flag_lines = []
-        body_start = 0
+        body_start = len(lines)
         for i, line in enumerate(lines[1:], start=1):
             if line.strip() and not line.startswith("-") and not line.startswith("•"):
                 # End of flags section.
@@ -191,7 +191,8 @@ def tidy_all_unprocessed(creds: Credentials, max_files: int = 10) -> dict:
     Returns results array — caller (the UI) decides what to do with them.
     Nothing is saved back to Drive or indexed anywhere.
     """
-    files = get_unprocessed_notes(creds)[:max_files]
+    all_unprocessed = get_unprocessed_notes(creds)
+    files = all_unprocessed[:max_files]
     results, errors = [], []
 
     for f in files:
@@ -206,5 +207,5 @@ def tidy_all_unprocessed(creds: Credentials, max_files: int = 10) -> dict:
         "processed": len(results),
         "results":   results,
         "errors":    errors,
-        "remaining": max(0, len(get_unprocessed_notes(creds)) - len(results)),
+        "remaining": max(0, len(all_unprocessed) - len(results)),
     }
