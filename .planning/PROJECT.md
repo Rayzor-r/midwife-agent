@@ -20,6 +20,12 @@ The agent reliably handles administrative and communication tasks for a working 
 - ✓ Email watcher (background thread, auto-draft replies on incoming mail) — existing
 - ✓ Document upload and keyword-scored RAG retrieval — existing
 - ✓ Deployed on Railway (Docker / Nixpacks, auto-restart on failure) — existing
+- ✓ **CLEAN-01**: Stale patch files deleted — validated in Phase 1
+- ✓ **CLEAN-02**: Dead Outlook integration removed — validated in Phase 1
+- ✓ **CLEAN-03**: Binary blob (files.zip) inspected (SAFE — source code only) and removed — validated in Phase 1
+- ✓ **CLEAN-04**: Duplicate root `index.html` deleted, canonical UI at `static/index.html` preserved — validated in Phase 1
+- ✓ **CLEAN-05**: CLAUDE_MODEL centralised — `note_tidy.py` and `email_watcher.py` now read from `os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5")` — validated in Phase 1
+- ✓ **CLEAN-06**: `.gitignore` hardened with 7 credential patterns; git history scan clean — validated in Phase 1
 
 ### Active
 
@@ -27,11 +33,6 @@ The agent reliably handles administrative and communication tasks for a working 
 - [ ] **SEC-02**: CORS restricted to the specific Railway deployment origin — not wildcard `*`
 - [ ] **SEC-03**: OAuth callback page does not render the raw token in HTML; token is written via Railway API or copied via a safer mechanism
 - [ ] **SEC-04**: Google OAuth credentials reviewed and rotated given the token was previously exposed in the browser UI
-- [ ] **CLEAN-01**: Stale patch files deleted (`chat_endpoint_patch.py`, `consolidated_patch.py`)
-- [ ] **CLEAN-02**: Dead Outlook integration removed (`outlook_integration.py`)
-- [ ] **CLEAN-03**: Binary blob removed from repository (`files.zip`) — contents inspected for sensitive data first
-- [ ] **CLEAN-04**: Duplicate root `index.html` deleted (canonical UI is `static/index.html`)
-- [ ] **CLEAN-05**: Claude model string centralised — single `CLAUDE_MODEL` env-var constant in `main.py`; `note_tidy.py` and `email_watcher.py` reference it rather than hardcoding separate values
 - [ ] **DOC-01**: `SECURITY.md` created, documenting the auth model, CORS policy, OAuth token handling, and instructions for rotating credentials
 
 ### Out of Scope
@@ -65,10 +66,10 @@ The agent reliably handles administrative and communication tasks for a working 
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Bearer token auth (not session/login) | Single-user tool; a shared secret is sufficient and simple to implement without breaking the existing JS frontend | — Pending |
-| CORS locked to Railway origin via env var | Avoids hardcoding; works in local dev if `ALLOWED_ORIGIN` is set to `http://localhost:8000` | — Pending |
-| Model string centralised in `main.py` only | Avoid circular imports; `note_tidy.py` and `email_watcher.py` accept model as parameter or read from env | — Pending |
-| Inspect `files.zip` before deleting | May contain patient data or credentials — must confirm before removing from git history | — Pending |
+| Bearer token auth (not session/login) | Single-user tool; a shared secret is sufficient and simple to implement without breaking the existing JS frontend | Pending — Phase 2 |
+| CORS locked to Railway origin via env var | Avoids hardcoding; works in local dev if `ALLOWED_ORIGIN` is set to `http://localhost:8000` | Pending — Phase 2 |
+| Model string centralised in `main.py` only | Avoid circular imports; `note_tidy.py` and `email_watcher.py` accept model as parameter or read from env | ✓ Done — Phase 1 (both files use `os.getenv`) |
+| Inspect `files.zip` before deleting | May contain patient data or credentials — must confirm before removing from git history | ✓ Done — Phase 1 (SAFE: source code only, PATH A taken) |
 
 ## Evolution
 
@@ -88,4 +89,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-28 after initialization*
+*Last updated: 2026-04-28 after Phase 1 completion*
