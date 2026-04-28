@@ -18,3 +18,12 @@ uploads/
 .vscode/
 .idea/
 *.DS_Store
+
+# Credentials and tokens (never commit)
+*.token
+*.key
+*.pem
+*.p12
+token.json
+google_token.json
+credentials.json
