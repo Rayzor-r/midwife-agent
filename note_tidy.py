@@ -128,7 +128,7 @@ def tidy_note_text(note_text: str) -> dict:
     client = anthropic.Anthropic(api_key=api_key)
 
     resp = client.messages.create(
-        model="claude-sonnet-4-5",  # confirm exact model string on your end
+        model=os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5"),
         max_tokens=2000,
         system=TIDY_SYSTEM_PROMPT,
         messages=[{

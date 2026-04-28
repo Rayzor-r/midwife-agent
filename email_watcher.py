@@ -76,7 +76,7 @@ def generate_draft(
     try:
         client = anthropic.Anthropic(api_key=api_key)
         response = client.messages.create(
-            model="claude-sonnet-4-6",
+            model=os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5"),
             max_tokens=1024,
             system=system_prompt,
             messages=[{"role": "user", "content": user_prompt}],
