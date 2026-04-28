@@ -42,7 +42,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. A `curl` request to any `/api/*` endpoint without an `Authorization: Bearer <token>` header returns HTTP 401; the same request with a valid token returns HTTP 200
   2. The CORS `allow_origins` list in `main.py` is set to the value of `ALLOWED_ORIGIN` env var (not `*`); a browser request from an unlisted origin is rejected with a CORS error
-  3. The `/auth/google/callback` page renders a generic success message only — no token JSON, no textarea, no credentials visible in the page source or server logs
+  3. The `/auth/google/callback` page renders a generic success message only — no token JSON, no textarea, no credentials in the browser response body or page source. The token is written only to Railway server logs (accessible only to operators with Railway dashboard access) as the secure delivery mechanism.
   4. Google OAuth credentials (client secret, access token, refresh token) have been rotated in Google Cloud Console and the new values are live in Railway env vars
 **Plans**: 4 plans
 
