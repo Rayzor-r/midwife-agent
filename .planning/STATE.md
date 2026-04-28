@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 ## Current Position
 
 Phase: 1 of 3 (Codebase Cleanup)
-Plan: 3 of 4 in current phase
-Status: Executing
-Last activity: 2026-04-28 — 01-03 complete: centralised CLAUDE_MODEL env var in note_tidy.py and email_watcher.py (CLEAN-05)
+Plan: 4 of 4 in current phase — PHASE COMPLETE
+Status: Phase 1 complete, ready for Phase 2
+Last activity: 2026-04-28 — 01-04 complete: .gitignore hardened with credential patterns; git history scan clean (CLEAN-06)
 
-Progress: [███░░░░░░░] 23%
+Progress: [████░░░░░░] 33%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 3 min
-- Total execution time: 9 min (est.)
+- Total plans completed: 4
+- Average duration: 2 min
+- Total execution time: ~10 min (est.)
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Codebase Cleanup | 3 | ~9 min | ~3 min |
+| 1. Codebase Cleanup | 4 | ~10 min | ~2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2 min), 01-02 (checkpoint), 01-03 (3 min)
+- Last 5 plans: 01-01 (2 min), 01-02 (checkpoint), 01-03 (3 min), 01-04 (1 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -49,6 +49,7 @@ Recent decisions affecting current work:
 - 01-01: outlook_integration.py inspected before deletion — no embedded credentials found, uses only env vars (MS_CLIENT_ID, MS_CLIENT_SECRET, MS_TENANT_ID, OUTLOOK_TOKEN); safe to delete without git history purge
 - 01-01: Root index.html confirmed stale (32 KB) vs canonical static/index.html (40 KB) — different sizes prove it is an outdated duplicate
 - 01-03: Default fallback "claude-sonnet-4-5" used in both modules to match main.py — aligns all three Anthropic callers under one env var
+- 01-04: Git history scan returned clean (no credentials found) — SEC-04 rotation not urgently required due to history leak, but still recommended given prior browser UI exposure
 
 ### Pending Todos
 
@@ -70,5 +71,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-04-28
-Stopped at: Completed 01-03-PLAN.md — CLAUDE_MODEL env var centralised in note_tidy.py and email_watcher.py (CLEAN-05)
+Stopped at: Completed 01-04-PLAN.md — .gitignore hardened with credential patterns; git history scan clean (CLEAN-06). Phase 1 complete.
 Resume file: None
