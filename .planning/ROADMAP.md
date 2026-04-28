@@ -44,7 +44,13 @@ Plans:
   2. The CORS `allow_origins` list in `main.py` is set to the value of `ALLOWED_ORIGIN` env var (not `*`); a browser request from an unlisted origin is rejected with a CORS error
   3. The `/auth/google/callback` page renders a generic success message only — no token JSON, no textarea, no credentials visible in the page source or server logs
   4. Google OAuth credentials (client secret, access token, refresh token) have been rotated in Google Cloud Console and the new values are live in Railway env vars
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Restrict CORS to ALLOWED_ORIGIN env var and remove token textarea from OAuth callback (SEC-02, SEC-03)
+- [ ] 02-02-PLAN.md — Add API key Bearer token middleware to main.py protecting all /api/* routes (SEC-01 backend)
+- [ ] 02-03-PLAN.md — Add frontend password overlay, Authorization headers on all fetch() calls, 401/network-failure handling (SEC-01 frontend)
+- [ ] 02-04-PLAN.md — Rotate Google OAuth credentials in Google Cloud Console and update Railway env vars (SEC-04)
 
 ### Phase 3: Documentation
 **Goal**: Anyone picking up this codebase can understand how authentication works, what all environment variables do, and how to rotate credentials — without reading source code
@@ -63,5 +69,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Codebase Cleanup | 4/4 | Complete | 2026-04-28 |
-| 2. Security Hardening | 0/TBD | Not started | - |
+| 2. Security Hardening | 0/4 | Not started | - |
 | 3. Documentation | 0/TBD | Not started | - |
