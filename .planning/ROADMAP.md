@@ -27,7 +27,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. `files.zip` has been inspected, its contents confirmed non-sensitive (or purged from git history if sensitive), and the file is no longer present in the repo
   3. `.gitignore` explicitly covers `.env`, `*.token`, `*.key`, `*.pem`, and common credential patterns; `git log --all -p` scan confirms no real credentials are in history
   4. A single `CLAUDE_MODEL` constant is read from the environment in `main.py`; `note_tidy.py` and `email_watcher.py` no longer contain their own hardcoded model string literals
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Delete dead patch files, outlook integration, root index.html duplicate
+- [ ] 01-02-PLAN.md — Inspect and remove files.zip (with checkpoint for sensitivity decision)
+- [ ] 01-03-PLAN.md — Centralise CLAUDE_MODEL env var in note_tidy.py and email_watcher.py
+- [ ] 01-04-PLAN.md — Harden .gitignore with credential patterns and scan git history
 
 ### Phase 2: Security Hardening
 **Goal**: Every live API endpoint requires a valid bearer token, the CORS policy admits only the intended origin, the OAuth callback no longer exposes credentials, and the previously exposed Google credentials have been replaced
@@ -56,6 +62,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Codebase Cleanup | 0/TBD | Not started | - |
+| 1. Codebase Cleanup | 0/4 | Not started | - |
 | 2. Security Hardening | 0/TBD | Not started | - |
 | 3. Documentation | 0/TBD | Not started | - |
