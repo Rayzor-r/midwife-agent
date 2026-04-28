@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 ## Current Position
 
 Phase: 1 of 3 (Codebase Cleanup)
-Plan: 0 of 4 in current phase
-Status: Ready to execute
-Last activity: 2026-04-28 — Phase 1 planned; 4 plans in 1 wave created and verified
+Plan: 1 of 4 in current phase
+Status: Executing
+Last activity: 2026-04-28 — 01-01 complete: deleted chat_endpoint_patch.py, consolidated_patch.py, outlook_integration.py, root index.html
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 8%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: —
-- Total execution time: —
+- Total plans completed: 1
+- Average duration: 2 min
+- Total execution time: 2 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 1. Codebase Cleanup | 1 | 2 min | 2 min |
 
 **Recent Trend:**
-- Last 5 plans: —
+- Last 5 plans: 01-01 (2 min)
 - Trend: —
 
 *Updated after each plan completion*
@@ -46,6 +46,8 @@ Recent decisions affecting current work:
 - Roadmap init: CORS locked to Railway origin via `ALLOWED_ORIGIN` env var — avoids hardcoding, works locally
 - Roadmap init: Model string centralised in `main.py` only — avoid circular imports; consumers accept model as parameter or read from env
 - Roadmap init: Inspect `files.zip` before deleting — may contain patient data or credentials
+- 01-01: outlook_integration.py inspected before deletion — no embedded credentials found, uses only env vars (MS_CLIENT_ID, MS_CLIENT_SECRET, MS_TENANT_ID, OUTLOOK_TOKEN); safe to delete without git history purge
+- 01-01: Root index.html confirmed stale (32 KB) vs canonical static/index.html (40 KB) — different sizes prove it is an outdated duplicate
 
 ### Pending Todos
 
@@ -67,5 +69,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-04-28
-Stopped at: Roadmap created; STATE.md and REQUIREMENTS.md traceability written; ready to plan Phase 1
+Stopped at: Completed 01-01-PLAN.md — dead code deletion (CLEAN-01, CLEAN-02, CLEAN-04)
 Resume file: None

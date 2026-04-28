@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 4 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Delete dead patch files, outlook integration, root index.html duplicate
+- [x] 01-01-PLAN.md — Delete dead patch files, outlook integration, root index.html duplicate
 - [ ] 01-02-PLAN.md — Inspect and remove files.zip (with checkpoint for sensitivity decision)
 - [ ] 01-03-PLAN.md — Centralise CLAUDE_MODEL env var in note_tidy.py and email_watcher.py
 - [ ] 01-04-PLAN.md — Harden .gitignore with credential patterns and scan git history
@@ -62,6 +62,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Codebase Cleanup | 0/4 | Not started | - |
+| 1. Codebase Cleanup | 1/4 | In progress | - |
 | 2. Security Hardening | 0/TBD | Not started | - |
 | 3. Documentation | 0/TBD | Not started | - |
