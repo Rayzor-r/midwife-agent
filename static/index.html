@@ -583,6 +583,25 @@ html,body{height:100%;font-family:var(--font);font-size:14px;
   </div>
 </div>
 
+<!-- ── Auth overlay ──────────────────────────────────────────────── -->
+<div id="auth-overlay">
+  <div id="auth-upgrade-notice" style="display:none;background:rgba(24,86,255,0.12);border:1px solid rgba(24,86,255,0.30);border-radius:var(--r-s);padding:12px 16px;width:100%;max-width:380px;font-family:var(--font);font-size:13px;color:var(--t1);text-align:center;margin-bottom:12px">
+    Note: this app now requires a password as part of a security update.
+  </div>
+  <div class="auth-box">
+    <div class="auth-title">Midwife AI</div>
+    <div>
+      <div class="auth-label">Enter password</div>
+      <div class="auth-input-wrap">
+        <input type="password" id="auth-input" placeholder="Password" autocomplete="current-password">
+        <button class="auth-eye" id="auth-eye" type="button" aria-label="Show/hide password">&#128065;</button>
+      </div>
+    </div>
+    <div class="auth-error" id="auth-error"></div>
+    <button class="auth-submit" id="auth-submit">Sign in</button>
+  </div>
+</div>
+
 <script>
 // ── Configure marked ─────────────────────────────────────────────────────────
 marked.setOptions({ breaks: true, gfm: true });
@@ -1045,24 +1064,5 @@ if (!localStorage.getItem('api_key')) {
 }
 chatInput.focus();
 </script>
-
-<!-- ── Auth overlay ──────────────────────────────────────────────── -->
-<div id="auth-overlay">
-  <div id="auth-upgrade-notice" style="display:none;background:rgba(24,86,255,0.12);border:1px solid rgba(24,86,255,0.30);border-radius:var(--r-s);padding:12px 16px;width:100%;max-width:380px;font-family:var(--font);font-size:13px;color:var(--t1);text-align:center;margin-bottom:12px">
-    Note: this app now requires a password as part of a security update.
-  </div>
-  <div class="auth-box">
-    <div class="auth-title">Midwife AI</div>
-    <div>
-      <div class="auth-label">Enter password</div>
-      <div class="auth-input-wrap">
-        <input type="password" id="auth-input" placeholder="Password" autocomplete="current-password">
-        <button class="auth-eye" id="auth-eye" type="button" aria-label="Show/hide password">&#128065;</button>
-      </div>
-    </div>
-    <div class="auth-error" id="auth-error"></div>
-    <button class="auth-submit" id="auth-submit">Sign in</button>
-  </div>
-</div>
 </body>
 </html>
