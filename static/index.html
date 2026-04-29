@@ -377,6 +377,45 @@ html,body{height:100%;font-family:var(--font);font-size:14px;
 
 /* ── Utils ──────────────────────────────────────────────────────── */
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Auth overlay ───────────────────────────────────────────────── */
+#auth-overlay{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;
+  background:rgba(7,9,15,0.92);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+}
+#auth-overlay.hidden{display:none}
+.auth-box{
+  background:var(--g2);border:1px solid var(--gb);border-radius:var(--r);
+  padding:40px 36px;width:100%;max-width:380px;
+  display:flex;flex-direction:column;gap:20px;
+}
+.auth-title{font-family:var(--font);font-size:18px;font-weight:600;color:var(--t1)}
+.auth-label{font-family:var(--font);font-size:13px;color:var(--t2);margin-bottom:4px}
+.auth-input-wrap{position:relative;display:flex;align-items:center}
+.auth-input-wrap input{
+  width:100%;padding:10px 40px 10px 14px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--gb);
+  border-radius:var(--r-s);color:var(--t1);font-family:var(--mono);
+  font-size:14px;outline:none;
+}
+.auth-input-wrap input:focus{border-color:var(--primary)}
+.auth-eye{
+  position:absolute;right:10px;background:none;border:none;
+  cursor:pointer;color:var(--t2);font-size:16px;padding:4px;line-height:1;
+}
+.auth-submit{
+  padding:10px 0;background:var(--primary);color:#fff;
+  border:none;border-radius:var(--r-s);font-family:var(--font);
+  font-size:14px;font-weight:600;cursor:pointer;
+}
+.auth-submit:hover{opacity:0.88}
+.auth-error{
+  font-family:var(--font);font-size:13px;color:#EA2143;
+  min-height:18px;
+}
 </style>
 </head>
 <body>
@@ -463,6 +502,7 @@ html,body{height:100%;font-family:var(--font);font-size:14px;
           <span id="statusTxt">Ready</span>
         </div>
         <button class="btn-ghost" onclick="clearChat()">Clear chat</button>
+        <a href="#" class="btn-ghost" onclick="signOut(); return false;" style="font-size:13px;color:var(--t2)">Sign out</a>
       </div>
     </header>
 
@@ -596,9 +636,19 @@ async function sendMessage(overrideText) {
   try {
     const res = await fetch('/api/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getApiKey() },
       body: JSON.stringify({ messages: state.messages }),
     });
+    if (res.status === 401) {
+      const hadKey = !!localStorage.getItem('api_key');
+      localStorage.removeItem('api_key');
+      showAuthOverlay(hadKey
+        ? 'That password didn\'t work. Please try again.'
+        : 'This app now requires a password. Enter the password your administrator gave you.');
+      setStreaming(false);
+      typingEl?.remove();
+      return;
+    }
     if (!res.ok) throw new Error(`Server error ${res.status}`);
 
     const reader  = res.body.getReader();
@@ -832,7 +882,15 @@ async function uploadFile(file) {
   fd.append('file', file);
 
   try {
-    const res  = await fetch('/api/upload', { method: 'POST', body: fd });
+    const res  = await fetch('/api/upload', { method: 'POST', body: fd, headers: { 'Authorization': 'Bearer ' + getApiKey() } });
+    if (res.status === 401) {
+      const hadKey = !!localStorage.getItem('api_key');
+      localStorage.removeItem('api_key');
+      showAuthOverlay(hadKey
+        ? 'That password didn\'t work. Please try again.'
+        : 'This app now requires a password. Enter the password your administrator gave you.');
+      return;
+    }
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Upload failed');
     toast(`✓ ${data.message}`, 'ok');
@@ -846,10 +904,22 @@ async function uploadFile(file) {
 
 async function loadDocs() {
   try {
-    const res = await fetch('/api/documents');
+    const res = await fetch('/api/documents', { headers: { 'Authorization': 'Bearer ' + getApiKey() } });
+    if (res.status === 401) {
+      const hadKey = !!localStorage.getItem('api_key');
+      localStorage.removeItem('api_key');
+      showAuthOverlay(hadKey
+        ? 'That password didn\'t work. Please try again.'
+        : 'This app now requires a password. Enter the password your administrator gave you.');
+      return;
+    }
     state.docs = await res.json();
     renderDocs();
-  } catch { /* silent */ }
+  } catch (err) {
+    if (err instanceof TypeError) {
+      toast("Couldn't reach the server. Check your connection and try again.", 'err');
+    }
+  }
 }
 
 function renderDocs() {
@@ -882,7 +952,15 @@ function renderDocs() {
 
 async function delDoc(id) {
   try {
-    await fetch(`/api/documents/${id}`, { method: 'DELETE' });
+    const delRes = await fetch(`/api/documents/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + getApiKey() } });
+    if (delRes.status === 401) {
+      const hadKey = !!localStorage.getItem('api_key');
+      localStorage.removeItem('api_key');
+      showAuthOverlay(hadKey
+        ? 'That password didn\'t work. Please try again.'
+        : 'This app now requires a password. Enter the password your administrator gave you.');
+      return;
+    }
     await loadDocs();
   } catch {
     toast('Could not remove document', 'err');
@@ -899,9 +977,92 @@ function toast(msg, type = 'ok') {
   setTimeout(() => el.remove(), 4500);
 }
 
+// ── Auth ─────────────────────────────────────────────────────────────────────
+
+function getApiKey() {
+  return localStorage.getItem('api_key') || '';
+}
+
+function updateUpgradeNotice() {
+  const notice = document.getElementById('auth-upgrade-notice');
+  if (!notice) return;
+  const firstTimeSeen = !localStorage.getItem('auth_upgrade_seen');
+  notice.style.display = (firstTimeSeen && !getApiKey()) ? 'block' : 'none';
+}
+
+function showAuthOverlay(errorMsg) {
+  const overlay = document.getElementById('auth-overlay');
+  const errEl   = document.getElementById('auth-error');
+  overlay.classList.remove('hidden');
+  errEl.textContent = errorMsg || '';
+  document.getElementById('auth-input').value = '';
+  document.getElementById('auth-input').focus();
+  updateUpgradeNotice();
+}
+
+function hideAuthOverlay() {
+  document.getElementById('auth-overlay').classList.add('hidden');
+}
+
+function signOut() {
+  localStorage.clear();
+  location.reload();
+}
+
+// Show/hide password toggle
+document.getElementById('auth-eye').addEventListener('click', function() {
+  const inp = document.getElementById('auth-input');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    this.innerHTML = '&#128065;&#65039;';
+  } else {
+    inp.type = 'password';
+    this.innerHTML = '&#128065;';
+  }
+});
+
+// Submit overlay on button click or Enter key
+document.getElementById('auth-submit').addEventListener('click', handleAuthSubmit);
+document.getElementById('auth-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') handleAuthSubmit();
+});
+
+function handleAuthSubmit() {
+  const val = document.getElementById('auth-input').value.trim();
+  if (!val) return;
+  localStorage.setItem('api_key', val);
+  localStorage.setItem('auth_upgrade_seen', '1');
+  hideAuthOverlay();
+  loadDocs();
+}
+
 // ── Init ─────────────────────────────────────────────────────────────────────
-loadDocs();
+if (!localStorage.getItem('api_key')) {
+  showAuthOverlay();
+} else {
+  hideAuthOverlay();
+  loadDocs();
+}
 chatInput.focus();
 </script>
+
+<!-- ── Auth overlay ──────────────────────────────────────────────── -->
+<div id="auth-overlay">
+  <div id="auth-upgrade-notice" style="display:none;background:rgba(24,86,255,0.12);border:1px solid rgba(24,86,255,0.30);border-radius:var(--r-s);padding:12px 16px;width:100%;max-width:380px;font-family:var(--font);font-size:13px;color:var(--t1);text-align:center;margin-bottom:12px">
+    Note: this app now requires a password as part of a security update.
+  </div>
+  <div class="auth-box">
+    <div class="auth-title">Midwife AI</div>
+    <div>
+      <div class="auth-label">Enter password</div>
+      <div class="auth-input-wrap">
+        <input type="password" id="auth-input" placeholder="Password" autocomplete="current-password">
+        <button class="auth-eye" id="auth-eye" type="button" aria-label="Show/hide password">&#128065;</button>
+      </div>
+    </div>
+    <div class="auth-error" id="auth-error"></div>
+    <button class="auth-submit" id="auth-submit">Sign in</button>
+  </div>
+</div>
 </body>
 </html>
