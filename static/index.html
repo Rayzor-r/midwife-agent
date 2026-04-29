@@ -664,7 +664,7 @@ async function sendMessage(overrideText) {
       showAuthOverlay(hadKey
         ? 'That password didn\'t work. Please try again.'
         : 'This app now requires a password. Enter the password your administrator gave you.');
-      setStreaming(false);
+      setStreaming(false, 'Ready');
       typingEl?.remove();
       return;
     }
@@ -908,6 +908,7 @@ async function uploadFile(file) {
       showAuthOverlay(hadKey
         ? 'That password didn\'t work. Please try again.'
         : 'This app now requires a password. Enter the password your administrator gave you.');
+      setStreaming(false, 'Ready');
       return;
     }
     const data = await res.json();
@@ -930,6 +931,7 @@ async function loadDocs() {
       showAuthOverlay(hadKey
         ? 'That password didn\'t work. Please try again.'
         : 'This app now requires a password. Enter the password your administrator gave you.');
+      setStreaming(false, 'Ready');
       return;
     }
     state.docs = await res.json();
@@ -964,7 +966,9 @@ function renderDocs() {
         <div class="doc-name" title="${esc(doc.name)}">${esc(doc.name)}</div>
         <div class="doc-meta">${doc.chunks} sections indexed</div>
       </div>
-      <button class="doc-del" onclick="delDoc('${doc.id}')" title="Remove">✕</button>`;
+      <button class="doc-del" title="Remove">✕</button>`;
+    const docId = doc.id;
+    item.querySelector('.doc-del').addEventListener('click', () => delDoc(docId));
     docList.appendChild(item);
   });
 }
@@ -978,6 +982,7 @@ async function delDoc(id) {
       showAuthOverlay(hadKey
         ? 'That password didn\'t work. Please try again.'
         : 'This app now requires a password. Enter the password your administrator gave you.');
+      setStreaming(false, 'Ready');
       return;
     }
     await loadDocs();

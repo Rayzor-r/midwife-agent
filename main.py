@@ -27,6 +27,7 @@ from pydantic import BaseModel
 
 load_dotenv()
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 from calendar_integration import (
@@ -837,8 +838,11 @@ async def health():
 
 @app.on_event("startup")
 async def startup_event():
-    import logging
-    logging.basicConfig(level=logging.INFO)
+    if not API_KEY:
+        logger.warning(
+            "API_KEY env var is not set — all /api/* requests will return 401. "
+            "Set API_KEY in Railway Variables before deploying."
+        )
     start_watcher(
         get_creds_fn=get_google_credentials,
         document_store=document_store,
