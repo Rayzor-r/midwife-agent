@@ -1029,7 +1029,7 @@ function hideAuthOverlay() {
 }
 
 function signOut() {
-  localStorage.clear();
+  localStorage.removeItem('api_key');
   location.reload();
 }
 
