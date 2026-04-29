@@ -9,6 +9,7 @@ v2.1 — Tool use loop added so Claude actually calls the integrations instead
 
 import io
 import json
+import logging
 import os
 import re
 import uuid
@@ -26,6 +27,8 @@ from pydantic import BaseModel
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
 from calendar_integration import (
     build_google_flow, cancel_event, create_event, credentials_to_dict,
     get_availability, get_google_credentials, list_events, update_event,
@@ -40,7 +43,7 @@ from note_tidy import list_note_files, tidy_note_file, tidy_note_text
 
 # ── App ────────────────────────────────────────────────────────────────────────
 app = FastAPI(title="Midwife AI Agent", version="2.1.0")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=[os.getenv("ALLOWED_ORIGIN", "http://localhost:8000")], allow_methods=["*"], allow_headers=["*"])
 
 static_dir = Path(__file__).parent / "static"
 static_dir.mkdir(exist_ok=True)
@@ -596,12 +599,15 @@ async def google_auth_callback(code: str = Query(...), state: str = Query(defaul
     flow.fetch_token(code=code)
     creds    = flow.credentials
     tok_dict = credentials_to_dict(creds)
-    return HTMLResponse(f"""
-    <html><body style="font-family:sans-serif;padding:40px;max-width:700px">
-    <h2>Google connected ✓</h2>
-    <p>Copy the token below and add it as <strong>GOOGLE_TOKEN</strong> in Railway Variables.</p>
-    <textarea rows="8" style="width:100%;font-size:11px;font-family:monospace">{json.dumps(tok_dict)}</textarea>
-    <p style="margin-top:16px">After saving in Railway, redeploy the service. Then close this tab.</p>
+    logger.info("GOOGLE_TOKEN: %s", json.dumps(tok_dict))
+    return HTMLResponse("""
+    <html><body style="font-family:sans-serif;padding:40px;max-width:700px;background:#07090f;color:#ebf1ff">
+    <h2>Google connected &#10003;</h2>
+    <p>Token has been written to server logs.</p>
+    <p>Copy it from your Railway dashboard under <strong>Deployments &rarr; Logs</strong>
+       (search for <code>GOOGLE_TOKEN</code>), then paste it into the
+       <strong>GOOGLE_TOKEN</strong> Railway environment variable and redeploy.</p>
+    <p style="margin-top:24px;color:rgba(235,241,255,0.6)">You may close this tab.</p>
     </body></html>
     """)
 
