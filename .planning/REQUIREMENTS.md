@@ -7,10 +7,10 @@
 
 ### Security
 
-- [ ] **SEC-01**: All `/api/*` routes reject requests without a valid `Authorization: Bearer <token>` header matching a secret stored in Railway env vars. Acceptance test: an automated test (or documented manual test using curl) confirms that requests without a valid token to any `/api/*` endpoint return HTTP 401, and requests with a valid token return HTTP 200.
-- [ ] **SEC-02**: CORS `allow_origins` restricted to the specific deployment origin (read from `ALLOWED_ORIGIN` env var, defaulting to `http://localhost:8000` for local dev), not `*`.
-- [ ] **SEC-03**: The `/auth/google/callback` response does not expose the token in any form — not in the rendered page, the page source, server logs, or any response body. The callback shows only a generic success message. The token is written server-side (to Railway env vars via the Railway API, or logged only to a secured location with explicit instructions).
-- [ ] **SEC-04**: Google OAuth credentials (client secret, access token, refresh token) reviewed and rotated given the token was previously rendered in the browser UI.
+- [x] **SEC-01**: All `/api/*` routes reject requests without a valid `Authorization: Bearer <token>` header matching a secret stored in Railway env vars. Acceptance test: an automated test (or documented manual test using curl) confirms that requests without a valid token to any `/api/*` endpoint return HTTP 401, and requests with a valid token return HTTP 200.
+- [x] **SEC-02**: CORS `allow_origins` restricted to the specific deployment origin (read from `ALLOWED_ORIGIN` env var, defaulting to `http://localhost:8000` for local dev), not `*`.
+- [x] **SEC-03**: The `/auth/google/callback` response does not expose the token in any form — not in the rendered page, the page source, server logs, or any response body. The callback shows only a generic success message. The token is written server-side (to Railway env vars via the Railway API, or logged only to a secured location with explicit instructions).
+- [x] **SEC-04**: Google OAuth credentials (client secret, access token, refresh token) reviewed and rotated given the token was previously rendered in the browser UI.
 
 ### Cleanup
 
@@ -55,10 +55,10 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | Phase 2 | Pending |
-| SEC-02 | Phase 2 | Pending |
-| SEC-03 | Phase 2 | Pending |
-| SEC-04 | Phase 2 | Pending |
+| SEC-01 | Phase 2 | Complete (02-02, 02-03) |
+| SEC-02 | Phase 2 | Complete (02-01) |
+| SEC-03 | Phase 2 | Complete (02-01) |
+| SEC-04 | Phase 2 | Complete (02-04) |
 | CLEAN-01 | Phase 1 | Complete (01-01) |
 | CLEAN-02 | Phase 1 | Complete (01-01) |
 | CLEAN-03 | Phase 1 | Complete (01-02) |
@@ -75,4 +75,4 @@
 
 ---
 *Requirements defined: 2026-04-28*
-*Last updated: 2026-04-28 after 01-02 completion (CLEAN-03 marked complete; all Phase 1 requirements now complete)*
+*Last updated: 2026-04-30 after Phase 2 completion (SEC-01 through SEC-04 marked complete)*

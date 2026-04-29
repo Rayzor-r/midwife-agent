@@ -13,7 +13,7 @@ This milestone hardens the existing prototype before any new features land. Thre
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Codebase Cleanup** - Delete dead files, purge the binary blob, lock down .gitignore, centralise the model string
-- [ ] **Phase 2: Security Hardening** - Add API key middleware, restrict CORS, protect OAuth callback, rotate exposed credentials
+- [x] **Phase 2: Security Hardening** - Add API key middleware, restrict CORS, protect OAuth callback, rotate exposed credentials
 - [ ] **Phase 3: Documentation** - Write SECURITY.md and complete the README env var reference
 
 ## Phase Details
@@ -47,10 +47,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Restrict CORS to ALLOWED_ORIGIN env var and remove token textarea from OAuth callback (SEC-02, SEC-03)
-- [ ] 02-02-PLAN.md — Add API key Bearer token middleware to main.py protecting all /api/* routes (SEC-01 backend)
-- [ ] 02-03-PLAN.md — Add frontend password overlay, Authorization headers on all fetch() calls, 401/network-failure handling (SEC-01 frontend)
-- [ ] 02-04-PLAN.md — Rotate Google OAuth credentials in Google Cloud Console and update Railway env vars (SEC-04)
+- [x] 02-01-PLAN.md — Restrict CORS to ALLOWED_ORIGIN env var and remove token textarea from OAuth callback (SEC-02, SEC-03)
+- [x] 02-02-PLAN.md — Add API key Bearer token middleware to main.py protecting all /api/* routes (SEC-01 backend)
+- [x] 02-03-PLAN.md — Add frontend password overlay, Authorization headers on all fetch() calls, 401/network-failure handling (SEC-01 frontend)
+- [x] 02-04-PLAN.md — Rotate Google OAuth credentials in Google Cloud Console and update Railway env vars (SEC-04)
 
 ### Phase 3: Documentation
 **Goal**: Anyone picking up this codebase can understand how authentication works, what all environment variables do, and how to rotate credentials — without reading source code
@@ -69,5 +69,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Codebase Cleanup | 4/4 | Complete | 2026-04-28 |
-| 2. Security Hardening | 0/4 | Not started | - |
+| 2. Security Hardening | 4/4 | Complete | 2026-04-30 |
 | 3. Documentation | 0/TBD | Not started | - |
