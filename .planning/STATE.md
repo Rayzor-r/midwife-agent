@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 ## Current Position
 
 Phase: 2 of 3 (Security Hardening)
-Plan: 0 of 4 in current phase — ready to execute
-Status: Ready to execute — 4 plans across 3 waves
-Last activity: 2026-04-29 — Phase 2 planned; 4 plans created (02-01 through 02-04) covering SEC-01 through SEC-04
+Plan: 3 of 4 in current phase — wave 3 checkpoint pending
+Status: Awaiting human action — Wave 3 (02-04) is all manual steps: deploy to Railway, rotate Google credentials
+Last activity: 2026-04-29 — Plans 02-01, 02-02, 02-03 executed and committed; bugfix pushed (overlay DOM ordering)
 
-Progress: [████░░░░░░] 33%
+Progress: [████████░░] 66%
 
 ## Performance Metrics
 
@@ -81,5 +81,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-04-29
-Stopped at: Phase 2 context gathered — 18 implementation decisions locked, CONTEXT.md written.
-Resume file: .planning/phases/02-security-hardening/02-CONTEXT.md
+Stopped at: Phase 2 wave 3 checkpoint — waiting for Railway deployment verification + Google credential rotation (02-04).
+Resume file: .planning/phases/02-security-hardening/02-04-PLAN.md
