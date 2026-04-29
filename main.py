@@ -19,7 +19,7 @@ from typing import Optional
 
 import anthropic
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import FastAPI, File, HTTPException, Query, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -55,6 +55,25 @@ if not BASE_URL.startswith("http"):
 
 # Anthropic model. Confirm this matches your account's available models.
 CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5")
+API_KEY = os.getenv("API_KEY", "")
+
+# ── API key auth middleware ─────────────────────────────────────────────────────
+
+EXEMPT_PATHS = {"/api/health"}
+
+@app.middleware("http")
+async def require_api_key(request: Request, call_next):
+    path = request.url.path
+    if path.startswith("/api/") and path not in EXEMPT_PATHS:
+        auth = request.headers.get("Authorization", "")
+        if not API_KEY or not auth.startswith("Bearer ") or auth[len("Bearer "):] != API_KEY:
+            return Response(
+                content='{"detail":"Unauthorized"}',
+                status_code=401,
+                media_type="application/json",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    return await call_next(request)
 
 # ── Document store ─────────────────────────────────────────────────────────────
 document_store: dict = {}
