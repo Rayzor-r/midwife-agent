@@ -77,28 +77,28 @@ Plans:
 
 **Phase Numbering continues from v1.0 (phases 1-3).**
 
-- [ ] **Phase 4: Clinical Notes Overhaul** - SOAP engine from bullet input, acronym glossary, four note templates with inference, ACC/DHB-compatible output
+- [ ] **Phase 4: Clinical Notes Overhaul** - SOAP engine from bullet input, acronym glossary, style-learning from past notes corpus, ACC/DHB-compatible output
 - [ ] **Phase 5: Reliability and UI** - Email watcher heartbeat, visible failure surfacing, chat message timestamps
 - [ ] **Phase 6: Outlook Integration** - MSAL OAuth for 3 accounts rebuilt from scratch, read/search/draft parity with Gmail
 
 ## Phase Details
 
 ### Phase 4: Clinical Notes Overhaul
-**Goal**: The midwife can type raw bullet-point observations and receive a properly structured, ACC/DHB-compatible clinical narrative — with acronyms expanded, the right note template applied, and no visible markdown headers in the output
+**Goal**: The midwife can type raw bullet-point observations and receive a properly structured, ACC/DHB-compatible clinical narrative — with acronyms expanded, style learned from her uploaded past notes, and no visible markdown headers in the output
 **Depends on**: Phase 3 (v1.0 complete — foundation is hardened)
 **Requirements**: NOTES-01, NOTES-02, NOTES-03, NOTES-04, NOTES-05
 **Success Criteria** (what must be TRUE):
   1. Midwife types bullet-point observations into the chat and receives a continuous-prose SOAP narrative — Subjective, Objective, Assessment, and Plan flow through paragraphs with no visible subheadings or markdown formatting in the output
   2. Common LMC acronyms (FHR, NAD, PV, etc.) in the bullet input are expanded in the generated note — the seed glossary ships with the code and is usable before any past notes are uploaded
-  3. All four templates (initial booking visit, routine antenatal, postnatal check, referral letter) are available and each produces output appropriate to its type when invoked
-  4. The agent selects the most appropriate template automatically from bullet content, and the midwife can override by naming a template explicitly — both paths produce a valid note
+  3. When past notes are uploaded to the Drive notes folder, the engine learns note style from that corpus (not predefined templates) — the midwife's own notes are the style exemplar
+  4. The agent infers clinical vs referral note type from bullet content automatically; midwife can override explicitly — both paths produce a valid note
   5. The generated output passes a spot-check against ACC and NZ DHB LMC documentation expectations: continuous paragraphs, no markdown headers, standard clinical language
-**Plans**: 3 plans (estimated)
+**Plans**: 3 plans
 
 Plans:
-- [ ] 04-01: SOAP engine and acronym glossary — `POST /api/notes/generate` endpoint, glossary module, NOTES-01 and NOTES-02
-- [ ] 04-02: Note template library — four template definitions with expected fields and output structure, NOTES-03
-- [ ] 04-03: Template inference and output compliance — auto-selection logic, explicit override, ACC/DHB prose format validation, NOTES-04 and NOTES-05
+- [ ] 04-01-PLAN.md — SOAP engine (notes_engine.py), seed glossary (glossary.json), generate_clinical_note tool and POST /api/notes/generate in main.py — NOTES-01, NOTES-02
+- [ ] 04-02-PLAN.md — Style profile builder (notes_engine_style.py): Drive corpus download, LLM style extraction, derived glossary — NOTES-03
+- [ ] 04-03-PLAN.md — Auto-detection of note type (clinical vs referral), explicit override, output compliance checker — NOTES-04, NOTES-05
 **UI hint**: yes
 
 ### Phase 5: Reliability and UI
@@ -142,6 +142,6 @@ v1.0 complete. v2.0 executes: 4 → 5 → 6
 | 1. Codebase Cleanup | v1.0 | 4/4 | Complete | 2026-04-28 |
 | 2. Security Hardening | v1.0 | 4/4 | Complete | 2026-04-30 |
 | 3. Documentation | v1.0 | 2/2 | Complete | 2026-04-30 |
-| 4. Clinical Notes Overhaul | v2.0 | 0/3 | Not started | - |
+| 4. Clinical Notes Overhaul | v2.0 | 0/3 | Ready to execute | - |
 | 5. Reliability and UI | v2.0 | 0/2 | Not started | - |
 | 6. Outlook Integration | v2.0 | 0/3 | Not started | - |
