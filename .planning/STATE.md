@@ -5,32 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-04-30)
 
 **Core value:** The agent saves a midwife meaningful time on every client encounter — especially note-writing — so that the $4,500 setup cost pays back within the first month of use.
-**Current focus:** Milestone v2.0 — Sellable Feature Set (defining requirements)
+**Current focus:** Milestone v2.0 — Phase 4: Clinical Notes Overhaul (ready to plan)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 4 of 6 (Clinical Notes Overhaul)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-30 — Milestone v2.0 started (12 requirements across Notes, UI, Gmail, Outlook)
+Status: Ready to plan
+Last activity: 2026-04-30 — v2.0 roadmap created (Phases 4-6, 12 requirements mapped, plan assignments recorded)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [░░░░░░░░░░] 0% (v2.0)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 2 min
-- Total execution time: ~10 min (est.)
+- Total plans completed: 10 (v1.0)
+- Average duration: ~2.5 min
+- Total execution time: ~25 min (est.)
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Codebase Cleanup | 4 | ~10 min | ~2.5 min |
+| 2. Security Hardening | 4 | ~10 min | ~2.5 min |
+| 3. Documentation | 2 | ~5 min | ~2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2 min), 01-02 (checkpoint), 01-03 (3 min), 01-04 (1 min)
+- Last 5 plans: 01-01 (2 min), 01-02 (checkpoint), 01-03 (3 min), 01-04 (1 min), 02-01 (~3 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -42,33 +44,22 @@ Progress: [░░░░░░░░░░] 0%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Roadmap init: Bearer token auth chosen (not session/login) — single shared secret sufficient for single-user tool
-- Roadmap init: CORS locked to Railway origin via `ALLOWED_ORIGIN` env var — avoids hardcoding, works locally
-- Roadmap init: Model string centralised in `main.py` only — avoid circular imports; consumers accept model as parameter or read from env
-- Roadmap init: Inspect `files.zip` before deleting — may contain patient data or credentials
-- 01-01: outlook_integration.py inspected before deletion — no embedded credentials found, uses only env vars (MS_CLIENT_ID, MS_CLIENT_SECRET, MS_TENANT_ID, OUTLOOK_TOKEN); safe to delete without git history purge
-- 01-01: Root index.html confirmed stale (32 KB) vs canonical static/index.html (40 KB) — different sizes prove it is an outdated duplicate
-- 01-03: Default fallback "claude-sonnet-4-5" used in both modules to match main.py — aligns all three Anthropic callers under one env var
-- 01-02: files.zip inspection result: SAFE — contained only source code snapshots (main.py, calendar_integration.py, outlook_integration.py, drive_integration.py, requirements.txt); no credentials or patient data; removed via normal git rm (PATH A); no history purge or force-push required
-- 01-04: Git history scan returned clean (no credentials found) — SEC-04 rotation not urgently required due to history leak, but still recommended given prior browser UI exposure
+- Roadmap init: SOAP notes use no visible subheadings — continuous prose paragraphs, implicit SOAP structure
+- Roadmap init: Glossary ships with seed list — usable before past notes are uploaded
+- Roadmap init: Outlook MSAL auth for 3 accounts — tokens stored as Railway env vars (same pattern as GOOGLE_TOKEN)
+- NOTES-01 + NOTES-02 are tightly coupled — same plan (04-01); glossary is required by the SOAP engine
+- OUTLOOK-01 is a hard prerequisite for OUTLOOK-02/03/04 — plan 06-01 must complete before 06-02/03
+- All new /api/* routes must be protected by existing Bearer token middleware (v1.0 carry-forward)
+- `msal` must be declared in requirements.txt — undeclared dependency was the reason outlook_integration.py was deleted in Phase 1
 
 ### Pending Todos
 
-None yet.
-
-### Decisions (Phase 2 additions)
-
-- 02-discuss: API_KEY is a shared deployment password (memorable phrase), not a random hex string — one per practice, v2.0 concern for per-user keys
-- 02-discuss: Frontend auth = full-screen password overlay (localStorage, type=password), "Sign out" corner link
-- 02-discuss: 401 → clear localStorage + re-show overlay; network failure → distinct "can't reach server" message
-- 02-discuss: SEC-03 = server-log token delivery (no textarea in callback page); SEC-03 must deploy before SEC-04
-- 02-discuss: /api/health exempt from auth middleware; all other /api/* routes protected
-- 02-discuss: email_watcher.py calls Google directly — does NOT go through /api/* — no auth change needed there
+None.
 
 ### Blockers/Concerns
 
-- Active testers on production: any change that breaks the chat endpoint or Google integrations is immediately felt — Phase 2 changes must be tested carefully before deploy
-- SEC-04 requires human action in Google Cloud Console (credential rotation) — cannot be fully automated
+- Active testers on production: any change that breaks the chat endpoint or Google integrations is immediately felt
+- Phase 6 (Outlook) is the highest-risk phase — MSAL auth is net-new and involves external OAuth flow
 
 ## Deferred Items
 
@@ -76,10 +67,12 @@ Items acknowledged and carried forward from previous milestone close:
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| *(none)* | | | |
+| Cultural fluency | TEREO-01: te reo Maori term insertion | Deferred to v2.1 | v2.0 milestone start |
+| Infrastructure | STORE-01: persistent document store | Deferred to v2.1 | v2.0 milestone start |
+| Bug fixes | BUG-01, BUG-02, BUG-03 | Deferred to v2.1 | v2.0 milestone start |
 
 ## Session Continuity
 
 Last session: 2026-04-30
-Stopped at: v2.0 milestone initialized. Requirements defined, roadmap created. Ready to discuss Phase 4.
-Resume file: .planning/phases/04-notes-overhaul/ (after /gsd-discuss-phase 4)
+Stopped at: v2.0 roadmap created. Phases 4-6 defined, all 12 requirements mapped. Ready to plan Phase 4.
+Resume file: .planning/phases/04-notes-overhaul/ (after /gsd-plan-phase 4)

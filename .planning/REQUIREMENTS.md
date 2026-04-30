@@ -59,20 +59,20 @@
 
 ## Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| NOTES-01 | Phase 4 | Pending |
-| NOTES-02 | Phase 4 | Pending |
-| NOTES-03 | Phase 4 | Pending |
-| NOTES-04 | Phase 4 | Pending |
-| NOTES-05 | Phase 4 | Pending |
-| UI-01 | Phase 5 | Pending |
-| GMAIL-01 | Phase 5 | Pending |
-| GMAIL-02 | Phase 5 | Pending |
-| OUTLOOK-01 | Phase 6 | Pending |
-| OUTLOOK-02 | Phase 6 | Pending |
-| OUTLOOK-03 | Phase 6 | Pending |
-| OUTLOOK-04 | Phase 6 | Pending |
+| Requirement | Phase | Plans | Status |
+|-------------|-------|-------|--------|
+| NOTES-01 | Phase 4 | 04-01 | Pending |
+| NOTES-02 | Phase 4 | 04-01 | Pending |
+| NOTES-03 | Phase 4 | 04-02 | Pending |
+| NOTES-04 | Phase 4 | 04-03 | Pending |
+| NOTES-05 | Phase 4 | 04-03 | Pending |
+| UI-01 | Phase 5 | 05-02 | Pending |
+| GMAIL-01 | Phase 5 | 05-01 | Pending |
+| GMAIL-02 | Phase 5 | 05-01 | Pending |
+| OUTLOOK-01 | Phase 6 | 06-01 | Pending |
+| OUTLOOK-02 | Phase 6 | 06-02 | Pending |
+| OUTLOOK-03 | Phase 6 | 06-03 | Pending |
+| OUTLOOK-04 | Phase 6 | 06-03 | Pending |
 
 **Coverage:**
 - v1 requirements: 12 total
@@ -81,4 +81,4 @@
 
 ---
 *Requirements defined: 2026-04-30*
-*Last updated: 2026-04-30 after v2.0 milestone initialization*
+*Last updated: 2026-04-30 after v2.0 roadmap created (plan assignments added)*
