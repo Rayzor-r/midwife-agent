@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-04-28)
 
 **Core value:** The agent reliably handles administrative and communication tasks for a working midwife — so that when a new feature or new client is added, there is a safe, auditable foundation to build on.
-**Current focus:** Phase 2 — Security Hardening
+**Current focus:** Milestone complete — Foundation Hardening v1.0 done
 
 ## Current Position
 
-Phase: 3 of 3 (Documentation)
-Plan: 0 of TBD in current phase — not yet planned
-Status: Ready to plan Phase 3
-Last activity: 2026-04-30 — Phase 2 complete; all 4 plans executed, verified, pushed. SEC-01 through SEC-04 satisfied.
+Phase: 3 of 3 (Documentation) — COMPLETE
+Plan: 2 of 2 complete
+Status: Milestone complete — all 3 phases done, all 12 v1 requirements satisfied
+Last activity: 2026-04-30 — Phase 3 executed and verified (SECURITY.md + README.md created; DOC-01, DOC-02 complete).
 
-Progress: [████████░░] 66%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -81,5 +81,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-04-30
-Stopped at: Phase 2 complete. Ready to plan Phase 3 (Documentation — SECURITY.md + README env var reference).
-Resume file: .planning/ROADMAP.md
+Stopped at: Phase 3 complete. Milestone complete. All 12 v1 requirements satisfied.
+Resume file: N/A — milestone done. Start next milestone with /gsd-new-milestone.

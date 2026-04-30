@@ -23,8 +23,8 @@
 
 ### Documentation
 
-- [ ] **DOC-01**: `SECURITY.md` created documenting the auth model (Bearer token), CORS policy, OAuth token handling, and step-by-step credential rotation instructions.
-- [ ] **DOC-02**: `README.md` updated (or created) with a complete environment variable reference covering at minimum: `API_KEY`, `ALLOWED_ORIGIN`, `CLAUDE_MODEL`, `ANTHROPIC_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_TOKEN`, `GOOGLE_DRIVE_FOLDER_ID`, `GOOGLE_DRIVE_NOTES_FOLDER_ID`, `PORT`, `RAILWAY_PUBLIC_DOMAIN`.
+- [x] **DOC-01**: `SECURITY.md` created documenting the auth model (Bearer token), CORS policy, OAuth token handling, and step-by-step credential rotation instructions.
+- [x] **DOC-02**: `README.md` updated (or created) with a complete environment variable reference covering at minimum: `API_KEY`, `ALLOWED_ORIGIN`, `CLAUDE_MODEL`, `ANTHROPIC_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_TOKEN`, `GOOGLE_DRIVE_FOLDER_ID`, `GOOGLE_DRIVE_NOTES_FOLDER_ID`, `PORT`, `RAILWAY_PUBLIC_DOMAIN`.
 
 ## v2 Requirements
 
@@ -65,8 +65,8 @@
 | CLEAN-04 | Phase 1 | Complete (01-01) |
 | CLEAN-05 | Phase 1 | Complete (01-03) |
 | CLEAN-06 | Phase 1 | Complete (01-04) |
-| DOC-01 | Phase 3 | Pending |
-| DOC-02 | Phase 3 | Pending |
+| DOC-01 | Phase 3 | Complete (03-01) |
+| DOC-02 | Phase 3 | Complete (03-02) |
 
 **Coverage:**
 - v1 requirements: 12 total
@@ -75,4 +75,4 @@
 
 ---
 *Requirements defined: 2026-04-28*
-*Last updated: 2026-04-30 after Phase 2 completion (SEC-01 through SEC-04 marked complete)*
+*Last updated: 2026-04-30 after Phase 3 completion (DOC-01, DOC-02 marked complete — all 12 v1 requirements satisfied)*

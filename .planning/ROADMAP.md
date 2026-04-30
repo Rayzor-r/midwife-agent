@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Codebase Cleanup** - Delete dead files, purge the binary blob, lock down .gitignore, centralise the model string
 - [x] **Phase 2: Security Hardening** - Add API key middleware, restrict CORS, protect OAuth callback, rotate exposed credentials
-- [ ] **Phase 3: Documentation** - Write SECURITY.md and complete the README env var reference
+- [x] **Phase 3: Documentation** - Write SECURITY.md and complete the README env var reference
 
 ## Phase Details
 
@@ -59,7 +59,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. `SECURITY.md` exists at the repo root and documents: the Bearer token auth model, the CORS policy and how to configure it, the OAuth token handling approach, and step-by-step credential rotation instructions
   2. `README.md` contains an environment variable reference table covering all 11 required vars (`API_KEY`, `ALLOWED_ORIGIN`, `CLAUDE_MODEL`, `ANTHROPIC_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_TOKEN`, `GOOGLE_DRIVE_FOLDER_ID`, `GOOGLE_DRIVE_NOTES_FOLDER_ID`, `PORT`, `RAILWAY_PUBLIC_DOMAIN`)
-**Plans**: TBD
+**Plans**: 2 plans
 
 ## Progress
 
@@ -70,4 +70,4 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. Codebase Cleanup | 4/4 | Complete | 2026-04-28 |
 | 2. Security Hardening | 4/4 | Complete | 2026-04-30 |
-| 3. Documentation | 0/TBD | Not started | - |
+| 3. Documentation | 2/2 | Complete | 2026-04-30 |
