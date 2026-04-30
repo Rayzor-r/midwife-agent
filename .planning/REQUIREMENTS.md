@@ -1,72 +1,78 @@
-# Requirements: Midwife Agent v1.0 — Foundation Hardening
+# Requirements: Midwife Agent v2.0 — Sellable Feature Set
 
-**Defined:** 2026-04-28
-**Core Value:** The agent reliably handles administrative and communication tasks for a working midwife — so that when a new feature or new client is added, there is a safe, auditable foundation to build on.
+**Defined:** 2026-04-30
+**Core Value:** The agent saves a midwife meaningful time on every client encounter — especially note-writing — so that the $4,500 setup cost pays back within the first month of use.
 
 ## v1 Requirements
 
-### Security
+### Clinical Notes
 
-- [x] **SEC-01**: All `/api/*` routes reject requests without a valid `Authorization: Bearer <token>` header matching a secret stored in Railway env vars. Acceptance test: an automated test (or documented manual test using curl) confirms that requests without a valid token to any `/api/*` endpoint return HTTP 401, and requests with a valid token return HTTP 200.
-- [x] **SEC-02**: CORS `allow_origins` restricted to the specific deployment origin (read from `ALLOWED_ORIGIN` env var, defaulting to `http://localhost:8000` for local dev), not `*`.
-- [x] **SEC-03**: The `/auth/google/callback` response does not expose the token in any form — not in the rendered page, the page source, server logs, or any response body. The callback shows only a generic success message. The token is written server-side (to Railway env vars via the Railway API, or logged only to a secured location with explicit instructions).
-- [x] **SEC-04**: Google OAuth credentials (client secret, access token, refresh token) reviewed and rotated given the token was previously rendered in the browser UI.
+- [ ] **NOTES-01**: Midwife can type bullet-point observations and receive a SOAP-structured clinical narrative with no visible subheadings — Subjective, Objective, Assessment, and Plan flow implicitly through paragraph structure
+- [ ] **NOTES-02**: Agent expands midwife-specific acronyms (FHR, NAD, PV, etc.) in generated notes using a glossary; glossary ships with a seed list of common LMC acronyms and is expandable by uploading past notes to Google Drive
+- [ ] **NOTES-03**: Four note templates are available — initial booking visit, routine antenatal, postnatal check, referral letter — each with defined expected fields and appropriate output structure
+- [ ] **NOTES-04**: Agent infers the appropriate template from bullet-point content, or midwife can explicitly select a template by name
+- [ ] **NOTES-05**: Generated note output is compatible with ACC and NZ DHB documentation expectations for LMC records (continuous prose paragraphs, no markdown headers in output)
 
-### Cleanup
+### User Interface
 
-- [x] **CLEAN-01**: `chat_endpoint_patch.py` and `consolidated_patch.py` deleted from repo.
-- [x] **CLEAN-02**: `outlook_integration.py` deleted from repo.
-- [x] **CLEAN-03**: `files.zip` inspected for sensitive content (patient data, credentials), then removed from the working tree and purged from git history using `git filter-repo` or BFG if sensitive content is found.
-- [x] **CLEAN-04**: Root `index.html` deleted (canonical UI is `static/index.html`).
-- [x] **CLEAN-05**: Claude model string centralised — one `CLAUDE_MODEL` env-var read in `main.py`; `note_tidy.py` and `email_watcher.py` read from env or accept the model as a parameter rather than hardcoding separate string literals.
-- [x] **CLEAN-06**: `.gitignore` verified to include `.env`, `*.token`, `*.key`, `*.pem`, and common credential file patterns. Confirm no real credentials are currently committed to git history (via `git log --all -p` scan or equivalent).
+- [ ] **UI-01**: Each chat message displays a timestamp showing the date and time it was sent
 
-### Documentation
+### Gmail Reliability
 
-- [x] **DOC-01**: `SECURITY.md` created documenting the auth model (Bearer token), CORS policy, OAuth token handling, and step-by-step credential rotation instructions.
-- [x] **DOC-02**: `README.md` updated (or created) with a complete environment variable reference covering at minimum: `API_KEY`, `ALLOWED_ORIGIN`, `CLAUDE_MODEL`, `ANTHROPIC_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_TOKEN`, `GOOGLE_DRIVE_FOLDER_ID`, `GOOGLE_DRIVE_NOTES_FOLDER_ID`, `PORT`, `RAILWAY_PUBLIC_DOMAIN`.
+- [ ] **GMAIL-01**: Email watcher status endpoint reports accurate thread liveness — a heartbeat mechanism detects when the watcher thread has died and surfaces this in `/api/health` or equivalent, replacing the current "running: True even when dead" behaviour
+- [ ] **GMAIL-02**: Email watcher resilience — when the thread fails silently, the failure is visible to the operator (status endpoint, logs) and the thread either auto-restarts or provides a clear signal that manual intervention is needed
 
-## v2 Requirements
+### Outlook Integration
 
-### Security (deferred)
+- [ ] **OUTLOOK-01**: Midwife can connect up to 3 Microsoft Outlook accounts to the agent via MSAL OAuth — built from scratch with `msal` declared in `requirements.txt` (replaces the deleted `outlook_integration.py`)
+- [ ] **OUTLOOK-02**: Agent can list inbox and read email content from any connected Outlook account
+- [ ] **OUTLOOK-03**: Agent can search email across connected Outlook accounts by keyword, sender, or date range
+- [ ] **OUTLOOK-04**: Agent can create draft replies for messages in any connected Outlook account
 
-- **SEC-V2-01**: CSRF protection on state-mutating endpoints (calendar create/update/delete, email draft)
-- **SEC-V2-02**: Audit log of agent actions (calendar events created, emails drafted, notes tidied) with timestamp and triggering query
+## v2 Requirements (deferred to v2.1)
 
-### Infrastructure (deferred)
+### Cultural Fluency
 
-- **INFRA-V2-01**: Persistent document store — chunks survive redeploys (SQLite or file-based)
-- **INFRA-V2-02**: Semantic/vector search replacing keyword RAG
-- **INFRA-V2-03**: Email watcher thread health check — restart on silent death; `watcher_status` reflects actual thread liveness
+- **TEREO-01**: Agent uses culturally appropriate te reo Maori terms naturally in responses, guided by an uploaded style guide that defines which terms to use and in what context
+
+### Infrastructure
+
+- **STORE-01**: Knowledge base document store persists across Railway redeploys — in-memory store replaced with SQLite on Railway volume or Railway Postgres
+
+### Bug Fixes
+
+- **BUG-01**: `reschedule_appointment` creates the rescheduled event with correct duration (zero-duration bug fixed)
+- **BUG-02**: `chunk_text` has an infinite-loop guard for inputs that would previously cause it to loop indefinitely
+- **BUG-03**: `signOut()` clears only the API key from localStorage rather than calling `localStorage.clear()` — preserves unrelated stored state
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| New agent capabilities or chat features | No new features this milestone — hardening only |
-| Midwife-specific knowledge base | Future milestone — GC Advisory KB stays for now |
-| Branding changes | Future milestone |
+| Midwife-specific knowledge base | GC Advisory KB stays; dedicated midwife KB is a future milestone |
+| Branding / identity changes | Future milestone |
 | Practice Vitals seminar funnel | Future milestone |
-| Multi-tenant / per-client replication | Future milestone |
-| Outlook / Microsoft Graph integration | Deferred indefinitely |
-| User login / session auth | Out of scope — single-user Bearer token is sufficient |
+| Multi-tenant / per-client replication | Requires v2.1+ persistent store as a prerequisite |
+| Vector / semantic search | Keyword RAG is sufficient; revisit when KB grows |
+| Per-user API keys / staff accounts | Single-user Bearer token model stays for v2.0 |
+| Calendar or Drive feature changes | Not part of sellable feature set — stable in v1.0 |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | Phase 2 | Complete (02-02, 02-03) |
-| SEC-02 | Phase 2 | Complete (02-01) |
-| SEC-03 | Phase 2 | Complete (02-01) |
-| SEC-04 | Phase 2 | Complete (02-04) |
-| CLEAN-01 | Phase 1 | Complete (01-01) |
-| CLEAN-02 | Phase 1 | Complete (01-01) |
-| CLEAN-03 | Phase 1 | Complete (01-02) |
-| CLEAN-04 | Phase 1 | Complete (01-01) |
-| CLEAN-05 | Phase 1 | Complete (01-03) |
-| CLEAN-06 | Phase 1 | Complete (01-04) |
-| DOC-01 | Phase 3 | Complete (03-01) |
-| DOC-02 | Phase 3 | Complete (03-02) |
+| NOTES-01 | Phase 4 | Pending |
+| NOTES-02 | Phase 4 | Pending |
+| NOTES-03 | Phase 4 | Pending |
+| NOTES-04 | Phase 4 | Pending |
+| NOTES-05 | Phase 4 | Pending |
+| UI-01 | Phase 5 | Pending |
+| GMAIL-01 | Phase 5 | Pending |
+| GMAIL-02 | Phase 5 | Pending |
+| OUTLOOK-01 | Phase 6 | Pending |
+| OUTLOOK-02 | Phase 6 | Pending |
+| OUTLOOK-03 | Phase 6 | Pending |
+| OUTLOOK-04 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 12 total
@@ -74,5 +80,5 @@
 - Unmapped: 0 ✓
 
 ---
-*Requirements defined: 2026-04-28*
-*Last updated: 2026-04-30 after Phase 3 completion (DOC-01, DOC-02 marked complete — all 12 v1 requirements satisfied)*
+*Requirements defined: 2026-04-30*
+*Last updated: 2026-04-30 after v2.0 milestone initialization*

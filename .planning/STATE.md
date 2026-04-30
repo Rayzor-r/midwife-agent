@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-28)
+See: .planning/PROJECT.md (updated 2026-04-30)
 
-**Core value:** The agent reliably handles administrative and communication tasks for a working midwife — so that when a new feature or new client is added, there is a safe, auditable foundation to build on.
-**Current focus:** Milestone complete — Foundation Hardening v1.0 done
+**Core value:** The agent saves a midwife meaningful time on every client encounter — especially note-writing — so that the $4,500 setup cost pays back within the first month of use.
+**Current focus:** Milestone v2.0 — Sellable Feature Set (defining requirements)
 
 ## Current Position
 
-Phase: 3 of 3 (Documentation) — COMPLETE
-Plan: 2 of 2 complete
-Status: Milestone complete — all 3 phases done, all 12 v1 requirements satisfied
-Last activity: 2026-04-30 — Phase 3 executed and verified (SECURITY.md + README.md created; DOC-01, DOC-02 complete).
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-30 — Milestone v2.0 started (12 requirements across Notes, UI, Gmail, Outlook)
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -81,5 +81,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-04-30
-Stopped at: Phase 3 complete. Milestone complete. All 12 v1 requirements satisfied.
-Resume file: N/A — milestone done. Start next milestone with /gsd-new-milestone.
+Stopped at: v2.0 milestone initialized. Requirements defined, roadmap created. Ready to discuss Phase 4.
+Resume file: .planning/phases/04-notes-overhaul/ (after /gsd-discuss-phase 4)

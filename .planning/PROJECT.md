@@ -2,11 +2,21 @@
 
 ## What This Is
 
-An AI assistant for Lead Maternity Carers (LMCs) built on FastAPI and Claude, deployed on Railway. It handles midwife-specific workflows: booking appointments via Google Calendar, monitoring Gmail, syncing a RAG knowledge base from Google Drive, auto-drafting email replies, and tidying clinical shorthand notes. The prototype is live and connected to a real Google account, with a small group of colleagues and friends currently testing it.
+An AI assistant for Lead Maternity Carers (LMCs) built on FastAPI and Claude, deployed on Railway. It handles midwife-specific workflows: booking appointments via Google Calendar, monitoring Gmail and Outlook, syncing a RAG knowledge base from Google Drive, auto-drafting email replies, and generating clinical notes in SOAP format from bullet-point observations. The agent is live in production and being prepared for commercial sale at NZD $4,500 per midwife practice.
 
 ## Core Value
 
-The agent reliably handles administrative and communication tasks for a working midwife — so that when a new feature or new client is added, there is a safe, auditable foundation to build on.
+The agent saves a midwife meaningful time on every client encounter — especially note-writing — so that the $4,500 setup cost pays back within the first month of use.
+
+## Current Milestone: v2.0 Sellable Feature Set
+
+**Goal:** Deliver the clinical notes engine and supporting integrations that make the agent worth buying — SOAP formatting, template library, Outlook support, and a reliable email watcher.
+
+**Target features:**
+- Clinical notes overhaul: SOAP-structured paragraphs from bullet input, acronym glossary, 4 note templates, ACC/DHB-compatible output
+- Chat UI timestamps: date/time on every message
+- Outlook integration: 3 accounts, MSAL auth from scratch, read/search/draft
+- Gmail watcher fixes: heartbeat check, accurate liveness status, resilience improvements
 
 ## Requirements
 
@@ -20,61 +30,62 @@ The agent reliably handles administrative and communication tasks for a working 
 - ✓ Email watcher (background thread, auto-draft replies on incoming mail) — existing
 - ✓ Document upload and keyword-scored RAG retrieval — existing
 - ✓ Deployed on Railway (Docker / Nixpacks, auto-restart on failure) — existing
-- ✓ **CLEAN-01**: Stale patch files deleted — validated in Phase 1
-- ✓ **CLEAN-02**: Dead Outlook integration removed — validated in Phase 1
-- ✓ **CLEAN-03**: Binary blob (files.zip) inspected (SAFE — source code only) and removed — validated in Phase 1
-- ✓ **CLEAN-04**: Duplicate root `index.html` deleted, canonical UI at `static/index.html` preserved — validated in Phase 1
-- ✓ **CLEAN-05**: CLAUDE_MODEL centralised — `note_tidy.py` and `email_watcher.py` now read from `os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5")` — validated in Phase 1
-- ✓ **CLEAN-06**: `.gitignore` hardened with 7 credential patterns; git history scan clean — validated in Phase 1
-
-### Validated (Phase 2 & 3 additions)
-
-- ✓ **SEC-01**: API key authentication middleware protecting all `/api/*` routes — validated in Phase 2
-- ✓ **SEC-02**: CORS restricted to `ALLOWED_ORIGIN` env var (not wildcard `*`) — validated in Phase 2
-- ✓ **SEC-03**: OAuth callback shows only generic success page; token delivered via Railway Logs only — validated in Phase 2
-- ✓ **SEC-04**: Google OAuth credentials reviewed; rotation runbook documented in SECURITY.md — validated in Phase 2
-- ✓ **DOC-01**: `SECURITY.md` created covering auth model, CORS, OAuth token handling, credential rotation — validated in Phase 3
-- ✓ **DOC-02**: `README.md` created with quick-start, env var reference (11 vars), Google OAuth setup — validated in Phase 3
+- ✓ **CLEAN-01 through CLEAN-06**: Codebase cleanup (dead files, model string, .gitignore) — validated Phase 1
+- ✓ **SEC-01 through SEC-04**: Auth middleware, CORS, OAuth callback safety, credential rotation — validated Phase 2
+- ✓ **DOC-01, DOC-02**: SECURITY.md and README.md — validated Phase 3
 
 ### Active
 
-*(none — Foundation Hardening milestone complete)*
+- [ ] **NOTES-01**: Clinical SOAP note generation from bullet-point input
+- [ ] **NOTES-02**: Midwife acronym glossary with expansion in generated notes
+- [ ] **NOTES-03**: Note template library (4 templates: initial booking, routine antenatal, postnatal check, referral letter)
+- [ ] **NOTES-04**: Template inference — agent selects template from input content or user picks explicitly
+- [ ] **NOTES-05**: Note output format compatible with ACC and NZ DHB LMC documentation expectations
+- [ ] **UI-01**: Chat message timestamps (date and time visible on each message)
+- [ ] **GMAIL-01**: Email watcher heartbeat — status endpoint reflects actual thread liveness
+- [ ] **GMAIL-02**: Email watcher resilience — surfaces thread failures visibly and/or auto-restarts
+- [ ] **OUTLOOK-01**: Connect up to 3 Microsoft Outlook accounts via MSAL OAuth (rebuilt from scratch)
+- [ ] **OUTLOOK-02**: Read and list email from connected Outlook accounts
+- [ ] **OUTLOOK-03**: Search email across connected Outlook accounts
+- [ ] **OUTLOOK-04**: Draft email replies for messages in connected Outlook accounts
 
 ### Out of Scope
 
-- Midwife-specific knowledge base — GC Advisory KB stays; midwife KB is a future milestone
+- Midwife-specific knowledge base — GC Advisory KB stays; dedicated midwife KB is a future milestone
 - Branding changes for midwife product identity — future milestone
 - Practice Vitals seminar funnel integration — future milestone
-- Multi-tenant support / per-client replication — future milestone
-- Vector/semantic search — keyword RAG sufficient for now; revisit when KB grows
-- Persistent document store — in-memory acceptable until multi-tenant is needed
-- Outlook / Microsoft Graph integration — deferred indefinitely until there is a client who needs it
-- New chat features or agent capabilities — no new features this milestone
+- Multi-tenant support / per-client replication — future milestone (requires v2.1+ persistent store first)
+- Vector/semantic search — keyword RAG sufficient; revisit when KB grows
+- Per-user API keys / staff accounts — v2.0 stays single-user Bearer token model
 
 ## Context
 
 - The agent is the prototype for a commercial product targeting LMC midwife practices in Northland, New Zealand
 - First paid setup is scoped at NZD $4,500; marketing via a "Practice Vitals" seminar concept
-- Domain context for the product: scope of practice awareness, Section 88 funding, Tikanga considerations, LMC-specific workflow patterns
-- A small group of testers are live on the production deployment right now — any change that breaks authentication or the chat endpoint is immediately felt
-- The codebase map (`.planning/codebase/CONCERNS.md`) has documented the specific issues driving this milestone
+- Domain context: scope of practice awareness, Section 88 funding, Tikanga considerations, LMC-specific workflow patterns (SOAP note format is standard for NZ DHB/ACC documentation)
+- Active testers on production — any change that breaks authentication, the chat endpoint, or Google integrations is immediately felt
+- Te reo Maori term insertion and persistent document store are v2.1 scope — style guide and store architecture will be defined then
+- Three Outlook accounts belong to the same midwife (personal, clinic, or shared variants) — all need read/search/draft parity with Gmail
 
 ## Constraints
 
 - **Compatibility**: No breaking changes to the chat endpoint or Google integrations — testers are active
-- **Deployment**: Railway — all secrets via Railway env vars; no filesystem persistence between redeploys
-- **Scope**: Zero new features this milestone — hardening and cleanup only
-- **Security**: The production Railway URL is known; any unauthenticated endpoint is publicly reachable right now
-- **Tech stack**: Python/FastAPI — no framework changes
+- **Deployment**: Railway — all secrets via Railway env vars; no filesystem persistence between redeploys (until v2.1 persistent store)
+- **Tech stack**: Python/FastAPI backend; vanilla JS frontend (`static/index.html`) — no framework changes
+- **Security**: All API routes protected by Bearer token middleware from v1.0 — new routes must also be protected
+- **MSAL dependency**: `outlook_integration.py` was deleted in v1.0 (undeclared msal dependency) — Outlook rebuild must declare `msal` in `requirements.txt` and implement auth cleanly
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Bearer token auth (not session/login) | Single-user tool; a shared secret is sufficient and simple to implement without breaking the existing JS frontend | Pending — Phase 2 |
-| CORS locked to Railway origin via env var | Avoids hardcoding; works in local dev if `ALLOWED_ORIGIN` is set to `http://localhost:8000` | Pending — Phase 2 |
-| Model string centralised in `main.py` only | Avoid circular imports; `note_tidy.py` and `email_watcher.py` accept model as parameter or read from env | ✓ Done — Phase 1 (both files use `os.getenv`) |
-| Inspect `files.zip` before deleting | May contain patient data or credentials — must confirm before removing from git history | ✓ Done — Phase 1 (SAFE: source code only, PATH A taken) |
+| Bearer token auth (not session/login) | Single-user tool; a shared secret is sufficient | ✓ Done — Phase 2 |
+| CORS locked to Railway origin via env var | Avoids hardcoding; works in local dev | ✓ Done — Phase 2 |
+| Model string centralised in `main.py` only | Avoid circular imports | ✓ Done — Phase 1 |
+| Inspect `files.zip` before deleting | May contain patient data | ✓ Done — Phase 1 (SAFE) |
+| SOAP notes: no visible subheadings | ACC/DHB expected format uses continuous prose paragraphs; implicit structure only | — Pending Phase 4 |
+| Glossary ships with seed list | Real past notes will be uploaded later to expand; v2.0 must be useful before upload | — Pending Phase 4 |
+| Outlook: MSAL auth for 3 accounts | Same read/search/draft capability as Gmail; tokens stored as Railway env vars like GOOGLE_TOKEN | — Pending Phase 6 |
 
 ## Evolution
 
@@ -94,4 +105,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-28 after Phase 1 completion*
+*Last updated: 2026-04-30 after v2.0 milestone start*
