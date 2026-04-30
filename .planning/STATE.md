@@ -73,6 +73,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-04-30
-Stopped at: v2.0 roadmap created. Phases 4-6 defined, all 12 requirements mapped. Ready to plan Phase 4.
-Resume file: .planning/phases/04-notes-overhaul/ (after /gsd-plan-phase 4)
+Last session: 2026-05-01
+Stopped at: Phase 4 context gathered. Key decisions: new notes_engine.py (note_tidy.py untouched), style-learning from full past-notes corpus (not rigid templates), glossary.json seed file, style profile cached in memory with lazy build + explicit refresh, referral letters follow same uploaded-examples-first principle.
+Resume file: .planning/phases/04-notes-overhaul/04-CONTEXT.md
