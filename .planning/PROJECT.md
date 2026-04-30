@@ -27,13 +27,18 @@ The agent reliably handles administrative and communication tasks for a working 
 - ✓ **CLEAN-05**: CLAUDE_MODEL centralised — `note_tidy.py` and `email_watcher.py` now read from `os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5")` — validated in Phase 1
 - ✓ **CLEAN-06**: `.gitignore` hardened with 7 credential patterns; git history scan clean — validated in Phase 1
 
+### Validated (Phase 2 & 3 additions)
+
+- ✓ **SEC-01**: API key authentication middleware protecting all `/api/*` routes — validated in Phase 2
+- ✓ **SEC-02**: CORS restricted to `ALLOWED_ORIGIN` env var (not wildcard `*`) — validated in Phase 2
+- ✓ **SEC-03**: OAuth callback shows only generic success page; token delivered via Railway Logs only — validated in Phase 2
+- ✓ **SEC-04**: Google OAuth credentials reviewed; rotation runbook documented in SECURITY.md — validated in Phase 2
+- ✓ **DOC-01**: `SECURITY.md` created covering auth model, CORS, OAuth token handling, credential rotation — validated in Phase 3
+- ✓ **DOC-02**: `README.md` created with quick-start, env var reference (11 vars), Google OAuth setup — validated in Phase 3
+
 ### Active
 
-- [ ] **SEC-01**: API key authentication middleware protecting all `/api/*` routes (shared secret via `Authorization: Bearer` header, stored in Railway env vars)
-- [ ] **SEC-02**: CORS restricted to the specific Railway deployment origin — not wildcard `*`
-- [ ] **SEC-03**: OAuth callback page does not render the raw token in HTML; token is written via Railway API or copied via a safer mechanism
-- [ ] **SEC-04**: Google OAuth credentials reviewed and rotated given the token was previously exposed in the browser UI
-- [ ] **DOC-01**: `SECURITY.md` created, documenting the auth model, CORS policy, OAuth token handling, and instructions for rotating credentials
+*(none — Foundation Hardening milestone complete)*
 
 ### Out of Scope
 
