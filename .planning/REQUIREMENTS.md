@@ -9,8 +9,8 @@
 
 - [ ] **NOTES-01**: Midwife can type bullet-point observations and receive a SOAP-structured clinical narrative with no visible subheadings — Subjective, Objective, Assessment, and Plan flow implicitly through paragraph structure
 - [ ] **NOTES-02**: Agent expands midwife-specific acronyms (FHR, NAD, PV, etc.) in generated notes using a glossary; glossary ships with a seed list of common LMC acronyms and is expandable by uploading past notes to Google Drive
-- [ ] **NOTES-03**: Four note templates are available — initial booking visit, routine antenatal, postnatal check, referral letter — each with defined expected fields and appropriate output structure
-- [ ] **NOTES-04**: Agent infers the appropriate template from bullet-point content, or midwife can explicitly select a template by name
+- [ ] **NOTES-03**: When past notes are uploaded to the Drive notes folder, the engine learns note style from the corpus and applies that style to all generated notes — the midwife's own notes are the style exemplar (per discuss-phase D-08; rigid template approach superseded)
+- [ ] **NOTES-04**: Agent infers the appropriate note type (clinical vs referral) from bullet-point content, or midwife can explicitly name the note type in her message
 - [ ] **NOTES-05**: Generated note output is compatible with ACC and NZ DHB documentation expectations for LMC records (continuous prose paragraphs, no markdown headers in output)
 
 ### User Interface
