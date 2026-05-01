@@ -411,6 +411,23 @@ TOOLS = [
 
 def _run_tool(name: str, args: dict) -> dict:
     """Execute a tool. Errors returned as {'error': ...}, not raised."""
+
+    # generate_clinical_note works without Google creds (cold-start path).
+    # Handle it before the creds gate so note generation is never blocked by Google auth.
+    if name == "generate_clinical_note":
+        creds = get_google_credentials()  # may be None — notes_engine handles cold-start
+        try:
+            if args.get("refresh_style"):
+                if not creds:
+                    return {"error": "Google is not connected — cannot refresh style profile."}
+                return refresh_style_profile(creds)
+            bullets = args.get("bullets", "")
+            if not bullets.strip():
+                return {"error": "No bullet-point observations provided."}
+            return generate_note(bullets=bullets, creds=creds, note_type=args.get("note_type"))
+        except Exception as e:
+            return {"error": str(e)}
+
     creds = get_google_credentials()
     if not creds:
         return {"error": "Google is not connected. Visit /auth/google."}
@@ -468,19 +485,6 @@ def _run_tool(name: str, args: dict) -> dict:
             )
         if name == "tidy_pasted_note":
             return tidy_note_text(args["note_text"])
-
-        # Clinical note generation
-        if name == "generate_clinical_note":
-            if args.get("refresh_style"):
-                return refresh_style_profile(creds)
-            bullets = args.get("bullets", "")
-            if not bullets.strip():
-                return {"error": "No bullet-point observations provided."}
-            return generate_note(
-                bullets=bullets,
-                creds=creds,
-                note_type=args.get("note_type"),
-            )
 
         return {"error": f"Unknown tool: {name}"}
 

@@ -130,7 +130,7 @@ def auto_detect_note_type(bullets: str) -> str:
 # ── Output compliance ─────────────────────────────────────────────────────────
 
 _MARKDOWN_HEADER_RE = _re.compile(r"^#{1,6}\s")
-_BOLD_SECTION_RE    = _re.compile(r"^\*\*[A-Za-z ]+\*\*:?\s*$")
+_BOLD_SECTION_RE    = _re.compile(r"^\*\*[A-Za-z ]+\*\*")
 _BULLET_LINE_RE     = _re.compile(r"^[-*]\s")
 _SOAP_LABEL_RE      = _re.compile(r"^(Subjective|Objective|Assessment|Plan):\s", _re.IGNORECASE)
 _SOAP_ABBREV_RE     = _re.compile(r"^[SOAP]:\s")
