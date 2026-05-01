@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-04-30)
 
 **Core value:** The agent saves a midwife meaningful time on every client encounter — especially note-writing — so that the $4,500 setup cost pays back within the first month of use.
-**Current focus:** Milestone v2.0 — Phase 4: Clinical Notes Overhaul (ready to execute)
+**Current focus:** Milestone v2.0 — Phase 5: Reliability and UI (next to execute)
 
 ## Current Position
 
-Phase: 4 of 6 (Clinical Notes Overhaul)
-Plan: 3 plans ready (04-01, 04-02, 04-03)
-Status: Ready to execute
-Last activity: 2026-05-01 — Phase 4 planned (3 plans in 3 sequential waves, NOTES-01 through NOTES-05 covered)
+Phase: 5 of 6 (Reliability and UI)
+Plan: 0/2 plans complete (05-01, 05-02 not yet planned)
+Status: Phase 4 complete — ready to plan Phase 5
+Last activity: 2026-05-01 — Phase 4 executed (3/3 plans complete, NOTES-01 through NOTES-05 satisfied)
 
-Progress: [░░░░░░░░░░] 0% (v2.0)
+Progress: [███░░░░░░░] 33% (v2.0 — 1 of 3 phases complete)
 
 ## Performance Metrics
 
@@ -74,5 +74,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-05-01
-Stopped at: Phase 4 context gathered. Key decisions: new notes_engine.py (note_tidy.py untouched), style-learning from full past-notes corpus (not rigid templates), glossary.json seed file, style profile cached in memory with lazy build + explicit refresh, referral letters follow same uploaded-examples-first principle.
-Resume file: .planning/phases/04-notes-overhaul/04-CONTEXT.md
+Stopped at: Phase 4 complete. All 3 plans executed and verified. Phase 5 (Reliability and UI) is next — plan it before executing.
+Resume file: none

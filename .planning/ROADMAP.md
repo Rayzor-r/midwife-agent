@@ -77,7 +77,7 @@ Plans:
 
 **Phase Numbering continues from v1.0 (phases 1-3).**
 
-- [ ] **Phase 4: Clinical Notes Overhaul** - SOAP engine from bullet input, acronym glossary, style-learning from past notes corpus, ACC/DHB-compatible output
+- [x] **Phase 4: Clinical Notes Overhaul** - SOAP engine from bullet input, acronym glossary, style-learning from past notes corpus, ACC/DHB-compatible output
 - [ ] **Phase 5: Reliability and UI** - Email watcher heartbeat, visible failure surfacing, chat message timestamps
 - [ ] **Phase 6: Outlook Integration** - MSAL OAuth for 3 accounts rebuilt from scratch, read/search/draft parity with Gmail
 
@@ -96,9 +96,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — SOAP engine (notes_engine.py), seed glossary (glossary.json), generate_clinical_note tool and POST /api/notes/generate in main.py — NOTES-01, NOTES-02
-- [ ] 04-02-PLAN.md — Style profile builder (notes_engine_style.py): Drive corpus download, LLM style extraction, derived glossary — NOTES-03
-- [ ] 04-03-PLAN.md — Auto-detection of note type (clinical vs referral), explicit override, output compliance checker — NOTES-04, NOTES-05
+- [x] 04-01-PLAN.md — SOAP engine (notes_engine.py), seed glossary (glossary.json), generate_clinical_note tool and POST /api/notes/generate in main.py — NOTES-01, NOTES-02
+- [x] 04-02-PLAN.md — Style profile builder (notes_engine_style.py): Drive corpus download, LLM style extraction, derived glossary — NOTES-03
+- [x] 04-03-PLAN.md — Auto-detection of note type (clinical vs referral), explicit override, output compliance checker — NOTES-04, NOTES-05
 **UI hint**: yes
 
 ### Phase 5: Reliability and UI
@@ -142,6 +142,6 @@ v1.0 complete. v2.0 executes: 4 → 5 → 6
 | 1. Codebase Cleanup | v1.0 | 4/4 | Complete | 2026-04-28 |
 | 2. Security Hardening | v1.0 | 4/4 | Complete | 2026-04-30 |
 | 3. Documentation | v1.0 | 2/2 | Complete | 2026-04-30 |
-| 4. Clinical Notes Overhaul | v2.0 | 0/3 | Ready to execute | - |
+| 4. Clinical Notes Overhaul | v2.0 | 3/3 | Complete | 2026-05-01 |
 | 5. Reliability and UI | v2.0 | 0/2 | Not started | - |
 | 6. Outlook Integration | v2.0 | 0/3 | Not started | - |
