@@ -41,6 +41,7 @@ from gmail_integration import (
 )
 from email_watcher import start_watcher, stop_watcher, watcher_status
 from note_tidy import list_note_files, tidy_note_file, tidy_note_text
+from notes_engine import generate_note, refresh_style_profile
 
 # ── App ────────────────────────────────────────────────────────────────────────
 app = FastAPI(title="Midwife AI Agent", version="2.1.0")
@@ -376,6 +377,35 @@ TOOLS = [
             "required": ["note_text"],
         },
     },
+    # Clinical note generation
+    {
+        "name": "generate_clinical_note",
+        "description": (
+            "Generate a SOAP-structured clinical note from bullet-point observations. "
+            "Use when the midwife types raw bullet points and wants a formatted clinical narrative. "
+            "Also use when she says something like 'write a referral letter for...' — set note_type='referral'. "
+            "If the midwife says 'refresh my notes style', call with refresh_style=True instead of bullets."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "bullets": {
+                    "type": "string",
+                    "description": "Raw bullet-point observations from the midwife.",
+                },
+                "note_type": {
+                    "type": "string",
+                    "enum": ["clinical", "referral"],
+                    "description": "Optional. 'referral' triggers referral letter format. Defaults to 'clinical'.",
+                },
+                "refresh_style": {
+                    "type": "boolean",
+                    "description": "If true, rebuilds the style profile from Drive notes and returns status. Ignores bullets.",
+                },
+            },
+            "required": [],
+        },
+    },
 ]
 
 
@@ -438,6 +468,19 @@ def _run_tool(name: str, args: dict) -> dict:
             )
         if name == "tidy_pasted_note":
             return tidy_note_text(args["note_text"])
+
+        # Clinical note generation
+        if name == "generate_clinical_note":
+            if args.get("refresh_style"):
+                return refresh_style_profile(creds)
+            bullets = args.get("bullets", "")
+            if not bullets.strip():
+                return {"error": "No bullet-point observations provided."}
+            return generate_note(
+                bullets=bullets,
+                creds=creds,
+                note_type=args.get("note_type"),
+            )
 
         return {"error": f"Unknown tool: {name}"}
 
@@ -815,6 +858,29 @@ async def notes_list():
         files = list_note_files(creds)
         return {"count": len(files), "files": files}
     except Exception as e:
+        raise HTTPException(500, str(e))
+
+
+# ── Clinical note generation ────────────────────────────────────────────────────
+
+class GenerateNoteRequest(BaseModel):
+    bullets: str
+    note_type: Optional[str] = None  # "clinical" or "referral"
+
+@app.post("/api/notes/generate")
+async def notes_generate(req: GenerateNoteRequest):
+    """Generate a SOAP clinical note from bullet-point observations."""
+    if not req.bullets.strip():
+        raise HTTPException(400, "bullets must not be empty")
+    creds = get_google_credentials()  # may be None — notes_engine handles cold-start
+    try:
+        return generate_note(
+            bullets=req.bullets,
+            creds=creds,
+            note_type=req.note_type,
+        )
+    except Exception as e:
+        logger.error("Note generation error: %s", e)
         raise HTTPException(500, str(e))
 
 
