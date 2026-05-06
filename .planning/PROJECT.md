@@ -33,17 +33,13 @@ The agent saves a midwife meaningful time on every client encounter — especial
 - ✓ **CLEAN-01 through CLEAN-06**: Codebase cleanup (dead files, model string, .gitignore) — validated Phase 1
 - ✓ **SEC-01 through SEC-04**: Auth middleware, CORS, OAuth callback safety, credential rotation — validated Phase 2
 - ✓ **DOC-01, DOC-02**: SECURITY.md and README.md — validated Phase 3
+- ✓ **NOTES-01 through NOTES-05**: SOAP clinical notes engine, acronym glossary, style learning from Drive corpus, type inference, ACC/DHB output compliance — validated Phase 4
+- ✓ **UI-01**: Chat message timestamps (DD MMM, HH:MM format, browser local time) — validated Phase 5
+- ✓ **GMAIL-01**: Email watcher heartbeat — `_watcher_thread.is_alive()` liveness, `watcher_alive` in `/api/health` — validated Phase 5
+- ✓ **GMAIL-02**: Email watcher resilience — watchdog daemon, 3× auto-restart with 10s/30s/90s backoff — validated Phase 5
 
 ### Active
 
-- [ ] **NOTES-01**: Clinical SOAP note generation from bullet-point input
-- [ ] **NOTES-02**: Midwife acronym glossary with expansion in generated notes
-- [ ] **NOTES-03**: Note template library (4 templates: initial booking, routine antenatal, postnatal check, referral letter)
-- [ ] **NOTES-04**: Template inference — agent selects template from input content or user picks explicitly
-- [ ] **NOTES-05**: Note output format compatible with ACC and NZ DHB LMC documentation expectations
-- [ ] **UI-01**: Chat message timestamps (date and time visible on each message)
-- [ ] **GMAIL-01**: Email watcher heartbeat — status endpoint reflects actual thread liveness
-- [ ] **GMAIL-02**: Email watcher resilience — surfaces thread failures visibly and/or auto-restarts
 - [ ] **OUTLOOK-01**: Connect up to 3 Microsoft Outlook accounts via MSAL OAuth (rebuilt from scratch)
 - [ ] **OUTLOOK-02**: Read and list email from connected Outlook accounts
 - [ ] **OUTLOOK-03**: Search email across connected Outlook accounts
@@ -83,8 +79,8 @@ The agent saves a midwife meaningful time on every client encounter — especial
 | CORS locked to Railway origin via env var | Avoids hardcoding; works in local dev | ✓ Done — Phase 2 |
 | Model string centralised in `main.py` only | Avoid circular imports | ✓ Done — Phase 1 |
 | Inspect `files.zip` before deleting | May contain patient data | ✓ Done — Phase 1 (SAFE) |
-| SOAP notes: no visible subheadings | ACC/DHB expected format uses continuous prose paragraphs; implicit structure only | — Pending Phase 4 |
-| Glossary ships with seed list | Real past notes will be uploaded later to expand; v2.0 must be useful before upload | — Pending Phase 4 |
+| SOAP notes: no visible subheadings | ACC/DHB expected format uses continuous prose paragraphs; implicit structure only | ✓ Done — Phase 4 |
+| Glossary ships with seed list | Real past notes will be uploaded later to expand; v2.0 must be useful before upload | ✓ Done — Phase 4 |
 | Outlook: MSAL auth for 3 accounts | Same read/search/draft capability as Gmail; tokens stored as Railway env vars like GOOGLE_TOKEN | — Pending Phase 6 |
 
 ## Evolution
@@ -105,4 +101,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-30 after v2.0 milestone start*
+*Last updated: 2026-05-06 after Phase 5 complete (Phases 4 and 5 requirements validated)*
