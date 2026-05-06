@@ -24,6 +24,7 @@ _MAX_PROCESSED = 2000
 _processed_ids: set = set()
 _processed_ids_order: deque = deque()
 _watcher_running = False
+_watcher_thread: threading.Thread | None = None
 
 
 def _track_processed(msg_id: str):
@@ -197,6 +198,7 @@ def watch_inbox(get_creds_fn, document_store: dict, search_fn, poll_interval: in
 
 def start_watcher(get_creds_fn, document_store: dict, search_fn, poll_interval: int = 120):
     """Start the email watcher in a background daemon thread."""
+    global _watcher_thread
     thread = threading.Thread(
         target=watch_inbox,
         args=(get_creds_fn, document_store, search_fn, poll_interval),
@@ -204,6 +206,7 @@ def start_watcher(get_creds_fn, document_store: dict, search_fn, poll_interval: 
         name="email-watcher",
     )
     thread.start()
+    _watcher_thread = thread
     logger.info("Email watcher thread started.")
     return thread
 
@@ -215,7 +218,10 @@ def stop_watcher():
 
 
 def watcher_status() -> dict:
+    global _watcher_thread
+    alive = _watcher_thread is not None and _watcher_thread.is_alive()
     return {
-        "running": _watcher_running,
+        "running": alive,
+        "is_alive": alive,
         "processed_count": len(_processed_ids),
     }
