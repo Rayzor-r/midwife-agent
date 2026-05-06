@@ -751,7 +751,11 @@ function setStreaming(on, label) {
 
 // ── Render helpers ───────────────────────────────────────────────────────────
 function now() {
-  return new Date().toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit' });
+  const d = new Date();
+  const day  = d.toLocaleString('en-NZ', { day: '2-digit' });
+  const mon  = d.toLocaleString('en-NZ', { month: 'short' });
+  const time = d.toLocaleString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false });
+  return `${day} ${mon}, ${time}`;
 }
 
 function appendUserMsg(text) {
