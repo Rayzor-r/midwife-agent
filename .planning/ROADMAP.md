@@ -78,7 +78,7 @@ Plans:
 **Phase Numbering continues from v1.0 (phases 1-3).**
 
 - [x] **Phase 4: Clinical Notes Overhaul** - SOAP engine from bullet input, acronym glossary, style-learning from past notes corpus, ACC/DHB-compatible output
-- [ ] **Phase 5: Reliability and UI** - Email watcher heartbeat, visible failure surfacing, chat message timestamps
+- [x] **Phase 5: Reliability and UI** - Email watcher heartbeat, visible failure surfacing, chat message timestamps
 - [ ] **Phase 6: Outlook Integration** - MSAL OAuth for 3 accounts rebuilt from scratch, read/search/draft parity with Gmail
 
 ## Phase Details
@@ -109,11 +109,11 @@ Plans:
   1. Each chat message in the UI shows a timestamp (date and time) at the moment it was sent — visible without hovering or expanding
   2. The `/api/health` endpoint (or equivalent) returns an accurate email watcher status: if the watcher thread has died, the status reflects "dead" or equivalent — the current "running: True even when dead" behaviour is gone
   3. When the email watcher thread fails, the failure is visible to the operator within one poll cycle — either via the status endpoint, server logs, or an auto-restart — and does not require a full application restart to detect
-**Plans**: 2 plans (estimated)
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: Email watcher heartbeat and resilience — heartbeat check in `email_watcher.py`, accurate liveness in health endpoint, auto-restart or clear failure signal, GMAIL-01 and GMAIL-02
-- [ ] 05-02: Chat message timestamps — timestamp rendering in `static/index.html` for all messages, UI-01
+- [x] 05-01-PLAN.md — Email watcher heartbeat and resilience — `_watcher_thread.is_alive()`, watchdog daemon with 3× backoff, `watcher_alive` in `/api/health` — GMAIL-01, GMAIL-02
+- [x] 05-02-PLAN.md — Chat message timestamps — `now()` returns "DD MMM, HH:MM" in all message renders — UI-01
 **UI hint**: yes
 
 ### Phase 6: Outlook Integration
@@ -143,5 +143,5 @@ v1.0 complete. v2.0 executes: 4 → 5 → 6
 | 2. Security Hardening | v1.0 | 4/4 | Complete | 2026-04-30 |
 | 3. Documentation | v1.0 | 2/2 | Complete | 2026-04-30 |
 | 4. Clinical Notes Overhaul | v2.0 | 3/3 | Complete | 2026-05-01 |
-| 5. Reliability and UI | v2.0 | 0/2 | Not started | - |
+| 5. Reliability and UI | v2.0 | 2/2 | Complete | 2026-05-06 |
 | 6. Outlook Integration | v2.0 | 0/3 | Not started | - |

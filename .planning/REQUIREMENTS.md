@@ -7,20 +7,20 @@
 
 ### Clinical Notes
 
-- [ ] **NOTES-01**: Midwife can type bullet-point observations and receive a SOAP-structured clinical narrative with no visible subheadings — Subjective, Objective, Assessment, and Plan flow implicitly through paragraph structure
-- [ ] **NOTES-02**: Agent expands midwife-specific acronyms (FHR, NAD, PV, etc.) in generated notes using a glossary; glossary ships with a seed list of common LMC acronyms and is expandable by uploading past notes to Google Drive
-- [ ] **NOTES-03**: When past notes are uploaded to the Drive notes folder, the engine learns note style from the corpus and applies that style to all generated notes — the midwife's own notes are the style exemplar (per discuss-phase D-08; rigid template approach superseded)
-- [ ] **NOTES-04**: Agent infers the appropriate note type (clinical vs referral) from bullet-point content, or midwife can explicitly name the note type in her message
-- [ ] **NOTES-05**: Generated note output is compatible with ACC and NZ DHB documentation expectations for LMC records (continuous prose paragraphs, no markdown headers in output)
+- [x] **NOTES-01**: Midwife can type bullet-point observations and receive a SOAP-structured clinical narrative with no visible subheadings — Subjective, Objective, Assessment, and Plan flow implicitly through paragraph structure
+- [x] **NOTES-02**: Agent expands midwife-specific acronyms (FHR, NAD, PV, etc.) in generated notes using a glossary; glossary ships with a seed list of common LMC acronyms and is expandable by uploading past notes to Google Drive
+- [x] **NOTES-03**: When past notes are uploaded to the Drive notes folder, the engine learns note style from the corpus and applies that style to all generated notes — the midwife's own notes are the style exemplar (per discuss-phase D-08; rigid template approach superseded)
+- [x] **NOTES-04**: Agent infers the appropriate note type (clinical vs referral) from bullet-point content, or midwife can explicitly name the note type in her message
+- [x] **NOTES-05**: Generated note output is compatible with ACC and NZ DHB documentation expectations for LMC records (continuous prose paragraphs, no markdown headers in output)
 
 ### User Interface
 
-- [ ] **UI-01**: Each chat message displays a timestamp showing the date and time it was sent
+- [x] **UI-01**: Each chat message displays a timestamp showing the date and time it was sent
 
 ### Gmail Reliability
 
-- [ ] **GMAIL-01**: Email watcher status endpoint reports accurate thread liveness — a heartbeat mechanism detects when the watcher thread has died and surfaces this in `/api/health` or equivalent, replacing the current "running: True even when dead" behaviour
-- [ ] **GMAIL-02**: Email watcher resilience — when the thread fails silently, the failure is visible to the operator (status endpoint, logs) and the thread either auto-restarts or provides a clear signal that manual intervention is needed
+- [x] **GMAIL-01**: Email watcher status endpoint reports accurate thread liveness — a heartbeat mechanism detects when the watcher thread has died and surfaces this in `/api/health` or equivalent, replacing the current "running: True even when dead" behaviour
+- [x] **GMAIL-02**: Email watcher resilience — when the thread fails silently, the failure is visible to the operator (status endpoint, logs) and the thread either auto-restarts or provides a clear signal that manual intervention is needed
 
 ### Outlook Integration
 
@@ -61,14 +61,14 @@
 
 | Requirement | Phase | Plans | Status |
 |-------------|-------|-------|--------|
-| NOTES-01 | Phase 4 | 04-01 | Pending |
-| NOTES-02 | Phase 4 | 04-01 | Pending |
-| NOTES-03 | Phase 4 | 04-02 | Pending |
-| NOTES-04 | Phase 4 | 04-03 | Pending |
-| NOTES-05 | Phase 4 | 04-03 | Pending |
-| UI-01 | Phase 5 | 05-02 | Pending |
-| GMAIL-01 | Phase 5 | 05-01 | Pending |
-| GMAIL-02 | Phase 5 | 05-01 | Pending |
+| NOTES-01 | Phase 4 | 04-01 | Satisfied 2026-05-01 |
+| NOTES-02 | Phase 4 | 04-01 | Satisfied 2026-05-01 |
+| NOTES-03 | Phase 4 | 04-02 | Satisfied 2026-05-01 |
+| NOTES-04 | Phase 4 | 04-03 | Satisfied 2026-05-01 |
+| NOTES-05 | Phase 4 | 04-03 | Satisfied 2026-05-01 |
+| UI-01 | Phase 5 | 05-02 | Satisfied 2026-05-06 |
+| GMAIL-01 | Phase 5 | 05-01 | Satisfied 2026-05-06 |
+| GMAIL-02 | Phase 5 | 05-01 | Satisfied 2026-05-06 |
 | OUTLOOK-01 | Phase 6 | 06-01 | Pending |
 | OUTLOOK-02 | Phase 6 | 06-02 | Pending |
 | OUTLOOK-03 | Phase 6 | 06-03 | Pending |
@@ -81,4 +81,4 @@
 
 ---
 *Requirements defined: 2026-04-30*
-*Last updated: 2026-04-30 after v2.0 roadmap created (plan assignments added)*
+*Last updated: 2026-05-06 after Phase 5 complete (UI-01, GMAIL-01, GMAIL-02 satisfied; NOTES-01 through NOTES-05 back-filled)*
