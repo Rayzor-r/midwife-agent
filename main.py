@@ -12,6 +12,7 @@ import json
 import logging
 import os
 import re
+import threading
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -893,6 +894,7 @@ async def notes_generate(req: GenerateNoteRequest):
 @app.get("/api/health")
 async def health():
     creds = get_google_credentials()
+    status = watcher_status()
     return {
         "status":           "ok",
         "version":          "2.1.0",
@@ -901,10 +903,57 @@ async def health():
         "google_connected": creds is not None,
         "model":            CLAUDE_MODEL,
         "notes_folder_set": bool(os.getenv("GOOGLE_DRIVE_NOTES_FOLDER_ID")),
+        "watcher_alive":    status.get("is_alive", False),
     }
 
 
 # ── Email watcher ──────────────────────────────────────────────────────────────
+
+def _run_watchdog(get_creds_fn, document_store, search_fn, poll_interval=120):
+    """
+    Watchdog: checks email watcher liveness every 60s.
+    Auto-restarts up to 3 times with 10s / 30s / 90s backoff.
+    Logs WARNING on each restart attempt and ERROR after exhausting retries.
+    """
+    import time as _time
+    BACKOFF = [10, 30, 90]
+    retry_count = 0
+
+    while True:
+        _time.sleep(60)
+        status = watcher_status()
+        if not status.get("is_alive", False):
+            if retry_count < len(BACKOFF):
+                delay = BACKOFF[retry_count]
+                logger.warning(
+                    "Email watcher thread is not alive. Restart attempt %d/%d — waiting %ds before restart.",
+                    retry_count + 1, len(BACKOFF), delay,
+                )
+                _time.sleep(delay)
+                try:
+                    start_watcher(
+                        get_creds_fn=get_creds_fn,
+                        document_store=document_store,
+                        search_fn=search_fn,
+                        poll_interval=poll_interval,
+                    )
+                    logger.info("Email watcher restarted successfully (attempt %d).", retry_count + 1)
+                    retry_count = 0  # reset on successful restart
+                except Exception as exc:
+                    logger.error("Email watcher restart attempt %d failed: %s", retry_count + 1, exc)
+                    retry_count += 1
+            else:
+                logger.error(
+                    "Email watcher has not recovered after %d restart attempts. "
+                    "Manual intervention required. watcher_alive will remain false.",
+                    len(BACKOFF),
+                )
+                # Stop looping on restart logic — sleep long to avoid log spam
+                _time.sleep(3600)
+                retry_count = 0  # allow retry again after 1 hour
+        else:
+            retry_count = 0  # thread alive — reset counter
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -919,6 +968,14 @@ async def startup_event():
         search_fn=search_documents,
         poll_interval=120,
     )
+    watchdog_thread = threading.Thread(
+        target=_run_watchdog,
+        args=(get_google_credentials, document_store, search_documents, 120),
+        daemon=True,
+        name="email-watcher-watchdog",
+    )
+    watchdog_thread.start()
+    logger.info("Email watcher watchdog started.")
 
 
 @app.get("/api/watcher/status")
