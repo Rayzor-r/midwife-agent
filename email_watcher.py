@@ -42,10 +42,10 @@ def generate_draft(
     email: dict,
     document_store: dict,
     search_fn,
-) -> tuple[str, bool]:
+) -> tuple[str | None, bool]:
     """
     Generate a draft reply for an email.
-    Returns (draft_html, needs_review).
+    Returns (draft_html, needs_review). draft_html is None for spam/skipped/error cases.
     """
     api_key = os.getenv("ANTHROPIC_API_KEY")
     if not api_key:
@@ -199,6 +199,9 @@ def watch_inbox(get_creds_fn, document_store: dict, search_fn, poll_interval: in
 def start_watcher(get_creds_fn, document_store: dict, search_fn, poll_interval: int = 120):
     """Start the email watcher in a background daemon thread."""
     global _watcher_thread
+    if _watcher_thread is not None and _watcher_thread.is_alive():
+        logger.warning("start_watcher called but watcher thread is already alive — skipping.")
+        return _watcher_thread
     thread = threading.Thread(
         target=watch_inbox,
         args=(get_creds_fn, document_store, search_fn, poll_interval),

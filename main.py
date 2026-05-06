@@ -13,6 +13,7 @@ import logging
 import os
 import re
 import threading
+import time
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -915,12 +916,11 @@ def _run_watchdog(get_creds_fn, document_store, search_fn, poll_interval=120):
     Auto-restarts up to 3 times with 10s / 30s / 90s backoff.
     Logs WARNING on each restart attempt and ERROR after exhausting retries.
     """
-    import time as _time
     BACKOFF = [10, 30, 90]
     retry_count = 0
 
     while True:
-        _time.sleep(60)
+        time.sleep(60)
         status = watcher_status()
         if not status.get("is_alive", False):
             if retry_count < len(BACKOFF):
@@ -929,7 +929,7 @@ def _run_watchdog(get_creds_fn, document_store, search_fn, poll_interval=120):
                     "Email watcher thread is not alive. Restart attempt %d/%d — waiting %ds before restart.",
                     retry_count + 1, len(BACKOFF), delay,
                 )
-                _time.sleep(delay)
+                time.sleep(delay)
                 try:
                     start_watcher(
                         get_creds_fn=get_creds_fn,
@@ -945,12 +945,11 @@ def _run_watchdog(get_creds_fn, document_store, search_fn, poll_interval=120):
             else:
                 logger.error(
                     "Email watcher has not recovered after %d restart attempts. "
-                    "Manual intervention required. watcher_alive will remain false.",
+                    "Will retry in 1 hour. watcher_alive will remain false until recovery.",
                     len(BACKOFF),
                 )
-                # Stop looping on restart logic — sleep long to avoid log spam
-                _time.sleep(3600)
-                retry_count = 0  # allow retry again after 1 hour
+                time.sleep(3600)
+                retry_count = 0  # retry cycle resets after 1-hour cooling period
         else:
             retry_count = 0  # thread alive — reset counter
 
